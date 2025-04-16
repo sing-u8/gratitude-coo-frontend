@@ -14,50 +14,56 @@ struct SignInView: View {
     var body: some View {
         VStack(alignment: .leading) {
             // SignIn Title Group
-            Group {
+            VStack(alignment: .leading) {
                 Text("SignIn")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.txPrimary)
+                    .textStyle(size: .title1, weight: .bold, color: .txPrimary)
                     .padding(.top, 80)
                 
-                Text("Let your gratitude take wing. Sign in to send messages that matter.")
-                    .font(.system(size: 16))
-                    .foregroundColor(.txPrimary)
+                Text("Let your gratitude take wing. \nSign in to send messages that matter.")
+                    .textStyle(size: .body, weight: .regular, color: .txPrimary)
                     .padding(.top, 4)
-            }
+            }.padding(.horizontal, 16)
             
             // SignIn Form Group
             Form {
+                // text fields
                 Section {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Email")
-                            .font(.system(size: 14))
-                            .foregroundColor(.txPrimary)
-                        TextField("Enter your email", text: $email)
-                            .textContentType(.emailAddress)
-                            .autocapitalization(.none)
-                    }
+                    LabeledTextField(
+                        label: "Email",
+                        placeholder: "Enter your email",
+                        text: $email
+                    ).padding(.top, 8)
                     
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Password")
-                            .font(.system(size: 14))
-                            .foregroundColor(.txPrimary)
-                        SecureField("Enter your password", text: $password)
-                            .textContentType(.password)
-                    }
+                    LabeledTextField(
+                        label: "Password",
+                        placeholder: "Enter your password",
+                        text: $password,
+                        isSecure: true
+                    ).padding(.bottom, 8)
                 }
+                .background(Color.itBgPri)
+                .listRowSeparator(.hidden)
                 
                 Button {
                     // todo: SignIn Action
                 } label: {
                     Text("Sign In")
-                }.buttonStyle(BtStyle(textColor: .itBgPri, borderColor: .hlPri, backgroundColor: .hlPri))
+                }.buttonStyle(BtStyle(textColor: .itBgPri, borderColor: .hlPri, backgroundColor: .hlPri)).listRowBackground(Color.clear).listRowInsets(EdgeInsets())
                 
+                Divider().listRowBackground(Color.clear).listRowInsets(EdgeInsets())
+                
+                HStack() {
+                    Text("No account yet?").textStyle(size: .subheadline, weight: .semibold, color: .txPrimary)
+                    
+                    Text("Sign Up")
+                        .textStyle(size: .subheadline, weight: .semibold, color: .txPrimary)
+                }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
             }
-            
-            
-                
-            
+            .listRowInsets(EdgeInsets())
+            .scrollContentBackground(.hidden)
         }
         .padding()
         .background(Color.bg)

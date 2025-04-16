@@ -34,6 +34,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				General/ComponentStyle/ButtonStyle.swift,
+				General/ComponentStyle/TextStyle.swift,
 				Model/GratitudePost.swift,
 				Model/Member.swift,
 				View/SignIn/SignInView.swift,
@@ -44,6 +45,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				General/ComponentStyle/ButtonStyle.swift,
+				General/ComponentStyle/TextStyle.swift,
 				Model/GratitudePost.swift,
 				Model/Member.swift,
 				View/SignIn/SignInView.swift,

@@ -13,7 +13,12 @@ struct BtStyle: ButtonStyle {
     let backgroundColor: Color
     let fontSize: CGFloat
     
-    init(textColor: Color = .txPrimary, borderColor: Color = .bdSub, backgroundColor: Color = .itBgPri ,fontSize: CGFloat = 17) {
+    init(
+        textColor: Color = .txPrimary,
+        borderColor: Color = .bdSub,
+        backgroundColor: Color = .itBgPri,
+        fontSize: CGFloat = 17
+    ) {
         self.textColor = textColor
         self.borderColor = borderColor
         self.fontSize = fontSize
@@ -24,15 +29,16 @@ struct BtStyle: ButtonStyle {
         configuration.label
             .font(.system(size: fontSize))
             .foregroundColor(textColor)
-            .frame(maxWidth: .infinity, maxHeight: 48)
+            .frame(maxWidth: .infinity, maxHeight: 100)
             .overlay {
                 RoundedRectangle(cornerRadius: 5)
                     .stroke(borderColor, lineWidth: 0.8)
             }
-            .padding(.horizontal, 15)
+            .padding(.horizontal, 16)
             .opacity(configuration.isPressed ? 0.5 : 1)
             .background(backgroundColor)
             .cornerRadius(8)
+        
     }
 }
 
