@@ -1,11 +1,10 @@
 import SwiftUI
 
-struct UserSearchItemView: View {
+struct UserSearchItem: View {
     let userId: Int
     let nickname: String
     let username: String
     let image: UIImage?
-    var isSelected: Bool = false
     var onTap: (() -> Void)?
     
     var body: some View {
@@ -18,7 +17,6 @@ struct UserSearchItemView: View {
                     userName: nickname,
                     image: image,
                     size: .small,
-                    borderColor: isSelected ? .hlPri : .limeGr
                 )
                 
                 // User info
@@ -33,12 +31,6 @@ struct UserSearchItemView: View {
                 }
                 
                 Spacer()
-                
-                // Selection indicator (if needed)
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.hlPri)
-                }
             }
             .padding(.vertical, 8)
             .padding(.horizontal, 16)
@@ -56,12 +48,11 @@ struct UserSearchListViewExample: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(users) { user in
-                    UserSearchItemView(
+                    UserSearchItem(
                         userId: user.id,
                         nickname: user.nickname,
                         username: user.username,
                         image: user.image,
-                        isSelected: selectedUser?.id == user.id,
                         onTap: {
                             selectedUser = user
                         }
@@ -97,7 +88,7 @@ struct UserSearchData: Identifiable {
     
     VStack(spacing: 20) {
         // Single item
-        UserSearchItemView(
+        UserSearchItem(
             userId: 1,
             nickname: "Nickname",
             username: "Username",
@@ -107,7 +98,7 @@ struct UserSearchData: Identifiable {
         .cornerRadius(8)
         
         // Single selected item
-        UserSearchItemView(
+        UserSearchItem(
             userId: 2,
             nickname: "Jane Doe",
             username: "@janedoe",

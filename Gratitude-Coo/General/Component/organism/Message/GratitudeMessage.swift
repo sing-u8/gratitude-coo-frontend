@@ -1,22 +1,7 @@
 import SwiftUI
 
 struct GratitudeMessage: View {
-    enum MessageType {
-        case fromSelfToSelf    // My message to myself
-        case fromSelfToOther   // My message to another user
-        case fromOtherToSelf   // Message from another user to me
-        
-        var prefix: String {
-            switch self {
-            case .fromSelfToSelf:
-                return ""  // No prefix needed
-            case .fromSelfToOther:
-                return "To"
-            case .fromOtherToSelf:
-                return "From"
-            }
-        }
-    }
+    
     
     // Message data
     let userName: String
