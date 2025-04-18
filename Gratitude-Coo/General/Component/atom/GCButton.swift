@@ -11,6 +11,7 @@ struct GCButton: View {
     let action: () -> Void
     var color: Color = .hlPri
     var fontSize: CGFloat = 17
+    var strokeWidth: CGFloat = 1
     
     var body: some View {
         Button(action: action) {
@@ -28,7 +29,8 @@ struct GCButton: View {
                 textColor: color,
                 borderColor: color,
                 backgroundColor: .clear,
-                fontSize: fontSize
+                fontSize: fontSize,
+                strokeWidth: strokeWidth
             )
         )
     }
@@ -48,7 +50,8 @@ struct GCButton: View {
         GCButton(
             title: "로그아웃",
             mode: .outlined,
-            action: {}
+            action: {},
+            strokeWidth: 2
         )
         .frame(height: 56)
         

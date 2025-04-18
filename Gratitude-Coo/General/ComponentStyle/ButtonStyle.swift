@@ -12,17 +12,20 @@ struct BtStyle: ButtonStyle {
     let borderColor: Color
     let backgroundColor: Color
     let fontSize: CGFloat
+    let strokeWidth: CGFloat
     
     init(
         textColor: Color = .txPrimary,
         borderColor: Color = .bdSub,
         backgroundColor: Color = .itBgPri,
-        fontSize: CGFloat = 17
+        fontSize: CGFloat = 17,
+        strokeWidth: CGFloat = 1
     ) {
         self.textColor = textColor
         self.borderColor = borderColor
         self.fontSize = fontSize
         self.backgroundColor = backgroundColor
+        self.strokeWidth = strokeWidth
     }
     
     func makeBody(configuration: Configuration) -> some View {
@@ -30,15 +33,15 @@ struct BtStyle: ButtonStyle {
             .font(.system(size: fontSize))
             .foregroundColor(textColor)
             .frame(maxWidth: .infinity, maxHeight: 100)
-            .overlay {
-                RoundedRectangle(cornerRadius: 5)
-                    .stroke(borderColor, lineWidth: 0.8)
-            }
-            .padding(.horizontal, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(backgroundColor)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(borderColor, lineWidth: strokeWidth)
+            )
             .opacity(configuration.isPressed ? 0.5 : 1)
-            .background(backgroundColor)
-            .cornerRadius(8)
-        
     }
 }
 
