@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Member: Identifiable, Hashable {
+struct User: Identifiable, Hashable {
     var id: Int
     var email: String
     var name: String?
@@ -18,15 +18,15 @@ struct Member: Identifiable, Hashable {
     var refreshToken: String
 }
 
-extension Member {
+extension User {
     
 }
 
-extension Member {
-    static var stub1: Member {
+extension User {
+    static var stub1: User {
         .init(id: 1, email: "test@gmail.com", acessToken: "accessToken1", refreshToken: "refreshToken1")
     }
-    static var stub2: Member {
+    static var stub2: User {
         .init(id: 2, email: "test@naver.com", acessToken: "accessToken2", refreshToken: "refreshToken2")
     }
 }

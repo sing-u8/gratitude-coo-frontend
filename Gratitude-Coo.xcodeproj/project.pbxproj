@@ -36,7 +36,9 @@
 				General/ComponentStyle/ButtonStyle.swift,
 				General/ComponentStyle/TextStyle.swift,
 				Model/GratitudePost.swift,
-				Model/Member.swift,
+				Model/User.swift,
+				View/MainTab/MainTabType.swift,
+				View/MainTab/MainTabView.swift,
 				View/SignIn/SignInView.swift,
 			);
 			target = 965FD9252DAF44160017C2AB /* Gratitude-CooTests */;
@@ -47,7 +49,9 @@
 				General/ComponentStyle/ButtonStyle.swift,
 				General/ComponentStyle/TextStyle.swift,
 				Model/GratitudePost.swift,
-				Model/Member.swift,
+				Model/User.swift,
+				View/MainTab/MainTabType.swift,
+				View/MainTab/MainTabView.swift,
 				View/SignIn/SignInView.swift,
 			);
 			target = 965FD92F2DAF44160017C2AB /* Gratitude-CooUITests */;

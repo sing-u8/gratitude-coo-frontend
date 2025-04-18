@@ -83,7 +83,7 @@ struct TextStyle: ViewModifier {
 }
 
 extension View {
-    func textStyle(size: TextStyle.SizeType, weight: TextStyle.WeightType = .regular, color: Color? = nil) -> some View {
+    func textStyle(size: TextStyle.SizeType = .body, weight: TextStyle.WeightType = .regular, color: Color? = nil) -> some View {
         modifier(TextStyle(size: size, weight: weight, color: color))
     }
     
