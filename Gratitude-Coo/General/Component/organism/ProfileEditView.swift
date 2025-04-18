@@ -7,7 +7,7 @@ struct ProfileEditView: View {
     @State private var selectedImage: UIImage?
     
     var body: some View {
-        VStack() {
+        VStack(spacing: 8) {
             // Profile Image Section
             VStack {
                 Avatar(userName:nickname, image: selectedImage, size: .large)
