@@ -8,10 +8,20 @@
 import SwiftUI
 
 struct SignInView: View {
+    
+    @EnvironmentObject var authViewModel: AuthenticationViewModel
+    
     @State private var email = ""
     @State private var password = ""
     @State private var showSignUp = false
     @State private var isSignInComplete = false
+    
+    private let validator = SignInValidator()
+    
+    private var isSignInButtonEnabled: Bool {
+        validator.validate(email: email, password: password)
+    }
+    
     
     var body: some View {
         NavigationStack {
@@ -24,28 +34,26 @@ struct SignInView: View {
                     
                     Text("Let your gratitude take wing. \nSign in to send messages that matter.")
                         .textStyle(size: .body, weight: .regular, color: .txPrimary)
-                      
                         .padding(.top, 4)
                 }.padding(.horizontal, 16)
                 
                 // SignIn Form Group
-                Form {
+                VStack {
                     // text fields
                     Section {
                         LabeledTextField(
                             label: "Email",
                             placeholder: "Enter your email",
                             text: $email
-                        ).padding(.top, 8)
+                        ).padding(.vertical, 12)
                         
                         LabeledTextField(
                             label: "Password",
                             placeholder: "Enter your password",
                             text: $password,
                             isSecure: true
-                        ).padding(.bottom, 8)
+                        ).padding(.bottom, 24)
                     }
-                    .listRowBackground(Color.itBgPri)
                     .listRowSeparator(.hidden)
                     
                     GCButton(
@@ -53,39 +61,45 @@ struct SignInView: View {
                         mode: .filled,
                         action: {
                             // Complete sign in and navigate to home
+                            authViewModel.send(action: .login(email: email, password: password))
                             isSignInComplete = true
-                        }
+                        },
+                        color: isSignInButtonEnabled ? Color.hlPri : Color.gray.opacity(0.8)
                     )
                     .frame(height: 56)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets())
+                    .disabled(!isSignInButtonEnabled)
                     
-                    Divider().listRowBackground(Color.clear).listRowInsets(EdgeInsets())
+                    
+                    Divider()
+                        .padding(.vertical, 16)
                     
                     HStack() {
-                        Text("No account yet?").textStyle(size: .subheadline, weight: .semibold, color: .txPrimary)
+                        Text("No account yet?").textStyle(
+                            size: .subheadline, weight: .semibold, color: .txPrimary)
                         
                         Button {
                             showSignUp = true
                         } label: {
                             Text("Sign Up")
                                 .textStyle(size: .subheadline, weight: .semibold, color: .hlPri)
-                        }
+                        }.frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets())
+
                 }
-                .listRowInsets(EdgeInsets())
-                .scrollContentBackground(.hidden)
+                .padding(.horizontal, 16)
+                .padding(.top, 40)
+
+                Spacer()
             }
             .padding()
             .background(Color.bg)
             .navigationDestination(isPresented: $showSignUp) {
                 SignUpView()
             }
-            .navigationDestination(isPresented: $isSignInComplete) {
-                Text("Home Screen")  // Placeholder for the home screen
+            .overlay {
+                if authViewModel.isLoading {
+                    ProgressView()
+                }
             }
         }
     }
@@ -93,4 +107,6 @@ struct SignInView: View {
 
 #Preview {
     SignInView()
+        .environmentObject(AuthenticationViewModel(container: .stub))
+    
 }

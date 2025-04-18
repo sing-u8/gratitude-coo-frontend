@@ -9,9 +9,10 @@ import Foundation
 
 class DIContainer: ObservableObject {
  
-    var service: ServiceType
+    var service: ServiceProtocol
     
-    init(service: ServiceType) {
+    
+    init(service: ServiceProtocol) {
         self.service = service
     }
     

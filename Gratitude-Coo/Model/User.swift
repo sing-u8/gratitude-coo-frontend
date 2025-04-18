@@ -13,9 +13,6 @@ struct User: Identifiable, Hashable {
     var name: String?
     var nickname: String?
     var profileImage: String?
-    
-    var acessToken: String
-    var refreshToken: String
 }
 
 extension User {
@@ -24,9 +21,9 @@ extension User {
 
 extension User {
     static var stub1: User {
-        .init(id: 1, email: "test@gmail.com", acessToken: "accessToken1", refreshToken: "refreshToken1")
+        .init(id: 1, email: "test@gmail.com")
     }
     static var stub2: User {
-        .init(id: 2, email: "test@naver.com", acessToken: "accessToken2", refreshToken: "refreshToken2")
+        .init(id: 2, email: "test@naver.com")
     }
 }

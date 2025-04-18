@@ -7,29 +7,32 @@
 
 import Foundation
 
-protocol ServiceType {
-    
-    var authService: AuthenticationServiceType { get set }
-    
+protocol ServiceProtocol {
+    var authService: AuthenticationServiceProtocol { get set }
 }
 
-class ServiceImpl: ServiceType {
+class ServiceImpl: ServiceProtocol {
     
-    var authService: AuthenticationServiceType
+    private let networkService: NetworkServiceProtocol
+    private let tokenManager: TokenManagerProtocol
+    
+    var authService: AuthenticationServiceProtocol
     
     init() {
-        self.authService = AuthenticationServiceImpl()
+        self.networkService = NetworkService()
+        self.tokenManager = TokenManager()
+        self.authService = AuthenticationService(
+            networkService: networkService,
+            tokenManager: tokenManager
+        )
     }
-    
 }
 
-class StubService: ServiceType {
-    
-    var authService: AuthenticationServiceType
+class StubService: ServiceProtocol {
+    var authService: AuthenticationServiceProtocol
     
     init() {
         self.authService = StubAuthenticationService()
     }
 }
-
 
