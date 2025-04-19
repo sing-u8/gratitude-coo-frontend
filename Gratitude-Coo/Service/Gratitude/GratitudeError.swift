@@ -10,17 +10,26 @@ enum GratitudeError: Error {
     
     static func mapFromNetworkError(_ error: NetworkError) -> GratitudeError {
         switch error {
-        case .badRequest:
+        case .invalidRequest, .invalidResponse:
             return .invalidInput
-        case .notFound:
-            return .notFound
+        case .httpError(let statusCode, _):
+            switch statusCode {
+            case 400:
+                return .invalidInput
+            case 401:
+                return .unauthorized
+            case 403:
+                return .forbidden
+            case 404:
+                return .notFound
+            case 500...599:
+                return .serverError
+            default:
+                return .unknown
+            }
         case .unauthorized:
             return .unauthorized
-        case .forbidden:
-            return .forbidden
-        case .serverError:
-            return .serverError
-        default:
+        case .decodingFailed, .requestFailed, .unknown:
             return .unknown
         }
     }
