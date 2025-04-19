@@ -6,9 +6,9 @@ enum Visibility: String, CaseIterable, Codable {
 }
 
 enum PostType: String, Codable {
-    case fromMe
-    case fromOther
-    case toOther
+    case fromMe = "FromMe"
+    case fromOther = "FromOther"
+    case toOther = "ToOther"
 }
 
 struct CreateGratitudeDto: Codable {

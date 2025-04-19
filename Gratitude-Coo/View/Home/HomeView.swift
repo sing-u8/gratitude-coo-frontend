@@ -12,12 +12,11 @@ struct HomeView: View {
     private let container: DIContainer
     private let modelContext: ModelContext
     
-    @State private var selectedType: MessageType = .fromSelfToSelf
+    @StateObject private var viewModel: HomeViewModel
+    
     @State private var showWriteMessage = false
     @State private var showSettings = false
     @State private var showProfileEdit = false
-    
-    @StateObject private var viewModel: HomeViewModel
     
     @Query private var currentUser: [User]
     
@@ -58,6 +57,26 @@ struct HomeView: View {
                     }
                 }
             }
+            .refreshable {
+                viewModel.refreshCurrentType()
+            }
+            .alert(
+                "오류",
+                isPresented: .init(
+                    get: { viewModel.errorMessage != nil },
+                    set: { if !$0 { viewModel.errorMessage = nil } }
+                ),
+                actions: {
+                    Button("확인") {
+                        viewModel.errorMessage = nil
+                    }
+                },
+                message: {
+                    if let errorMessage = viewModel.errorMessage {
+                        Text(errorMessage)
+                    }
+                }
+            )
         }
     }
     
@@ -70,7 +89,6 @@ struct HomeView: View {
         )
         .padding(.horizontal, 16)
         .padding(.bottom, 24)
-        
     }
     
     private var buttonSection: some View {
@@ -98,9 +116,9 @@ struct HomeView: View {
     
     private var messageSection: some View {
         VStack(spacing: 0) {
-            MessageTabBar(selectedType: $selectedType)
+            MessageTabBar(selectedType: $viewModel.selectedType)
             
-            TabView(selection: $selectedType) {
+            TabView(selection: $viewModel.selectedType) {
                 ForEach(MessageType.allCases, id: \.self) { type in
                     messageList(for: type)
                 }
@@ -112,21 +130,74 @@ struct HomeView: View {
     private func messageList(for type: MessageType) -> some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 16) {
-                ForEach(0..<10) { index in
-                    GratitudeMessage(
-                        userName: "Brandnew",
-                        userImage: nil,
-                        message: "오늘 회사에서 도움을 준 지민이에게 감사해요. 항상 친절하게 대해주셔서 감사합니다.",
-                        //                        likeCount: 999,
-                        //            commentCount: 999,
-                        date: Date(),
-                        messageType: type
-                    )
+                // 로딩 중이고 메시지가 없는 경우 스켈레톤 표시
+                if viewModel.isLoading(for: type) && viewModel.messages(for: type).isEmpty {
+                    ForEach(0..<3, id: \.self) { _ in
+                        GratitudeMessageSkeleton(messageType: type)
+                    }
+                } else {
+                    // 메시지 목록 표시
+                    ForEach(viewModel.messages(for: type), id: \.id) { message in
+                        GratitudeMessage(
+                            userName: message.isAnonymous ? "익명" : (type == .fromSelfToOther ? message.recipient.nickname : message.author.nickname),
+                            userImage: nil,
+                            message: message.contents,
+                            date: Date(), // API 응답에 날짜 필드가 없으므로 현재 날짜 사용
+                            messageType: type
+                        )
+                        .onAppear {
+                            // 페이지네이션: 마지막 아이템이 보이면 다음 페이지 로드
+                            viewModel.loadMoreIfNeeded(for: type, currentItem: message)
+                        }
+                    }
+                    
+                    // 더 로드 중인 경우 하단에 스켈레톤 표시
+                    if viewModel.isLoading(for: type) && !viewModel.messages(for: type).isEmpty {
+                        GratitudeMessageSkeleton(messageType: type)
+                    }
+                    
+                    // 데이터가 없는 경우 표시
+                    if !viewModel.isLoading(for: type) && viewModel.messages(for: type).isEmpty {
+                        emptyStateView(for: type)
+                    }
                 }
             }
             .padding(16)
         }
         .tag(type)
+    }
+    
+    // 데이터가 없는 경우 표시할 뷰
+    private func emptyStateView(for type: MessageType) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "doc.text.magnifyingglass")
+                .font(.system(size: 50))
+                .foregroundColor(.gray)
+            
+            Text("메시지가 없습니다")
+                .font(.headline)
+                .foregroundColor(.txPrimary)
+            
+            Text(emptyStateMessage(for: type))
+                .font(.subheadline)
+                .foregroundColor(.txPrimary)
+                .multilineTextAlignment(.center)
+            
+        }
+        .padding(.vertical, 40)
+        .frame(maxWidth: .infinity)
+    }
+    
+    // 메시지 타입별 빈 상태 메시지
+    private func emptyStateMessage(for type: MessageType) -> String {
+        switch type {
+        case .fromSelfToSelf:
+            return "자신에게 감사 메시지를 보내보세요.\n오늘 하루를 돌아보고 감사함을 표현해보세요."
+        case .fromSelfToOther:
+            return "다른 사람에게 감사 메시지를 보내보세요.\n감사함을 표현하면 모두가 행복해집니다."
+        case .fromOtherToSelf:
+            return "아직 받은 감사 메시지가 없습니다.\n다른 사람에게 먼저 감사 메시지를 보내보세요."
+        }
     }
 }
 

@@ -25,6 +25,9 @@ class HomeViewModel: ObservableObject {
     // 에러 상태
     @Published var errorMessage: String?
     
+    // 현재 선택된 메시지 타입
+    @Published var selectedType: MessageType = .fromSelfToSelf
+    
     // 페이지네이션 관련
     private var selfToSelfNextCursor: String?
     private var selfToOtherNextCursor: String?
@@ -38,18 +41,62 @@ class HomeViewModel: ObservableObject {
         self.container = container
         self.modelContext = modelContext
         
-//        fetchCurrentUserId()
+        // 현재 사용자 정보를 로드
+        fetchCurrentUserId()
+        
+        // selectedType이 변경될 때마다 메시지 로드
+        setupTypeObserver()
+    }
+    
+    // MARK: - Setup
+    private func setupTypeObserver() {
+        // selectedType 변경 시 해당 타입의 메시지가 비어있다면 로드
+        $selectedType
+            .dropFirst() // 초기값 무시
+            .sink { [weak self] newType in
+                guard let self = self else { return }
+                
+                // 선택된 탭에 따른 메시지 로드
+                switch newType {
+                case .fromSelfToSelf:
+                    if self.selfToSelfMessages.isEmpty && self.selfToSelfNextCursor == nil {
+                        self.loadSelfToSelfMessages(forceRefresh: true)
+                    }
+                case .fromSelfToOther:
+                    if self.selfToOtherMessages.isEmpty && self.selfToOtherNextCursor == nil {
+                        self.loadSelfToOtherMessages(forceRefresh: true)
+                    }
+                case .fromOtherToSelf:
+                    if self.otherToSelfMessages.isEmpty && self.otherToSelfNextCursor == nil {
+                        self.loadOtherToSelfMessages(forceRefresh: true)
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Methods
     private func fetchCurrentUserId() {
         // SwiftData를 사용하여 현재 사용자 ID를 가져오는 로직
-        // 실제 구현에서는 로그인된 사용자의 ID를 가져와야 함
-        // 임시로 하드코딩
-        self.currentUserId = 1
-        
-        // 초기 데이터 로드
-        loadInitialData()
+        let descriptor = FetchDescriptor<User>()
+        if let existingUsers = try? modelContext.fetch(descriptor).first {
+            self.currentUserId = existingUsers.id
+        }
+        print("Current User ID in HomeViewModel: \(self.currentUserId)")
+        // 초기 데이터 로드 (현재 선택된 탭만)
+        loadMessagesForCurrentType()
+    }
+    
+    // 현재 선택된 탭에 해당하는 메시지만 로드
+    func loadMessagesForCurrentType() {
+        switch selectedType {
+        case .fromSelfToSelf:
+            loadSelfToSelfMessages(forceRefresh: true)
+        case .fromSelfToOther:
+            loadSelfToOtherMessages(forceRefresh: true)
+        case .fromOtherToSelf:
+            loadOtherToSelfMessages(forceRefresh: true)
+        }
     }
     
     func loadInitialData() {
@@ -73,7 +120,7 @@ class HomeViewModel: ObservableObject {
             memberId: currentUserId,
             postType: .fromMe,  // API에 맞게 조정 필요
             cursor: selfToSelfNextCursor,
-            order: ["createdAt:desc"],
+            order: ["createdAt_DESC"],
             take: defaultTake
         )
         
@@ -103,7 +150,7 @@ class HomeViewModel: ObservableObject {
         
         if forceRefresh {
             selfToOtherMessages = []
-            selfToOtherNextCursor = nil
+            selfToOtherNextCursor = ""
         }
         
         isSelfToOtherLoading = true
@@ -112,7 +159,7 @@ class HomeViewModel: ObservableObject {
             memberId: currentUserId,
             postType: .toOther,  // API에 맞게 조정 필요
             cursor: selfToOtherNextCursor,
-            order: ["createdAt:desc"],
+            order: ["createdAt_DESC"],
             take: defaultTake
         )
         
@@ -151,7 +198,7 @@ class HomeViewModel: ObservableObject {
             memberId: currentUserId,
             postType: .fromOther,  // API에 맞게 조정 필요
             cursor: otherToSelfNextCursor,
-            order: ["createdAt:desc"],
+            order: ["createdAt_DESC"],
             take: defaultTake
         )
         
@@ -205,6 +252,23 @@ class HomeViewModel: ObservableObject {
         loadOtherToSelfMessages(forceRefresh: true)
     }
     
+    // 선택된 타입만 새로고침
+    func refreshCurrentType() {
+        switch selectedType {
+        case .fromSelfToSelf:
+            loadSelfToSelfMessages(forceRefresh: true)
+        case .fromSelfToOther:
+            loadSelfToOtherMessages(forceRefresh: true)
+        case .fromOtherToSelf:
+            loadOtherToSelfMessages(forceRefresh: true)
+        }
+    }
+    
+    // 선택된 타입 변경
+    func setSelectedType(_ type: MessageType) {
+        selectedType = type
+    }
+    
     // MARK: - Helper Methods
     func isLoading(for type: MessageType) -> Bool {
         switch type {
@@ -225,6 +289,17 @@ class HomeViewModel: ObservableObject {
             return selfToOtherMessages
         case .fromOtherToSelf:
             return otherToSelfMessages
+        }
+    }
+    
+    func hasNextPage(for type: MessageType) -> Bool {
+        switch type {
+        case .fromSelfToSelf:
+            return selfToSelfNextCursor != nil
+        case .fromSelfToOther:
+            return selfToOtherNextCursor != nil
+        case .fromOtherToSelf:
+            return otherToSelfNextCursor != nil
         }
     }
 } 

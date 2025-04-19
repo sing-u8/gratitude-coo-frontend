@@ -18,8 +18,21 @@ extension GratitudeEndpoint: APIEndpoint {
             return "/gratitude/\(id)"
         case .deleteGratitude(let id, _):
             return "/gratitude/\(id)"
-        case .getGratitudeList:
-            return "/gratitude"
+        case .getGratitudeList(let dto, _):
+            var pathWithQuery = "/gratitude?memberId=\(dto.memberId)&take=\(dto.take)"
+            
+            let orderString = dto.order.joined(separator: ",")
+            pathWithQuery += "&order=\(orderString)"
+            
+            if let postType = dto.postType {
+                pathWithQuery += "&postType=\(postType.rawValue)"
+            }
+            
+            if let cursor = dto.cursor, !cursor.isEmpty {
+                pathWithQuery += "&cursor=\(cursor)"
+            }
+            
+            return pathWithQuery
         case .toggleGratitudeLike(let id, _):
             return "/gratitude/\(id)/like"
         case .getGratitudeLikeCount(let id, _):
@@ -66,19 +79,7 @@ extension GratitudeEndpoint: APIEndpoint {
     }
     
     var queryParameters: [String: Any]? {
-        switch self {
-        case .getGratitudeList(let dto, _):
-            var params: [String: Any] = [
-                "memberId": dto.memberId,
-                "take": dto.take,
-                "order": dto.order
-            ]
-            if let postType = dto.postType { params["postType"] = postType.rawValue }
-            if let cursor = dto.cursor { params["cursor"] = cursor }
-            return params
-        default:
-            return nil
-        }
+        return nil
     }
     
     var headers: [String: String]? {

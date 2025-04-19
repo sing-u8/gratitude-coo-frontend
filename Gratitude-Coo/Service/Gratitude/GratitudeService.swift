@@ -59,6 +59,9 @@ class GratitudeService: GratitudeServiceProtocol {
             return Fail(error: GratitudeError.unauthorized).eraseToAnyPublisher()
         }
         
+        print("getGratitudeList -- accessToken: \(accessToken)")
+        print("getGratitudeList -- dto: \(dto.memberId) \(String(describing: dto.cursor)) \(dto.order) \(dto.take) \(String(describing: dto.postType?.rawValue))")
+        
         let endpoint = GratitudeEndpoint.getGratitudeList(dto: dto, accessToken: accessToken)
         return networkService.request(endpoint)
             .mapError { GratitudeError.mapFromNetworkError($0) }
