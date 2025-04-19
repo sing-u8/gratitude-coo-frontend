@@ -7,7 +7,7 @@ struct GratitudeMessage: View {
     let userName: String
     let userImage: UIImage?
     let message: String
-    let likeCount: Int
+    //    let likeCount: Int
     //    let commentCount: Int
     let date: Date
     let messageType: MessageType
@@ -79,17 +79,17 @@ struct GratitudeMessage: View {
             // Footer with engagement counts and date
             HStack {
                 // Like button
-                Button {
-                    onLike?()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "heart")
-                            .foregroundColor(.red)
-                            .font(.system(size: 20))
-                        Text("\(likeCount)")
-                            .textStyle(size: .footnote, weight: .regular, color: .txPrimary)
-                    }
-                }
+                //                Button {
+                //                    onLike?()
+                //                } label: {
+                //                    HStack(spacing: 4) {
+                //                        Image(systemName: "heart")
+                //                            .foregroundColor(.red)
+                //                            .font(.system(size: 20))
+                //                        Text("\(likeCount)")
+                //                            .textStyle(size: .footnote, weight: .regular, color: .txPrimary)
+                //                    }
+                //                }
                 
                 /*
                  Spacer().frame(width: 16)
@@ -158,7 +158,7 @@ struct GPUserProfileE: View {
             userName: "Brandnew",
             userImage: nil,
             message: "오늘 회사에서 도움을 준 지민이에게 감사해요. 항상 친절하게 대해주셔서 감사합니다.",
-            likeCount: 999,
+            //            likeCount: 999,
             //            commentCount: 999,
             date: Date(),
             messageType: .fromSelfToSelf
@@ -169,7 +169,7 @@ struct GPUserProfileE: View {
             userName: "Brandnew",
             userImage: nil,
             message: "오늘 회사에서 도움을 준 지민이에게 감사해요. 항상 친절하게 대해주셔서 감사합니다.",
-            likeCount: 999,
+            //            likeCount: 999,
             //            commentCount: 999,
             date: Date(),
             messageType: .fromSelfToOther
@@ -180,7 +180,7 @@ struct GPUserProfileE: View {
             userName: "Brandnew",
             userImage: nil,
             message: "오늘 회사에서 도움을 준 지민이에게 감사해요. 항상 친절하게 대해주셔서 감사합니다.",
-            likeCount: 999,
+            //            likeCount: 999,
             //            commentCount: 999,
             date: Date(),
             messageType: .fromOtherToSelf

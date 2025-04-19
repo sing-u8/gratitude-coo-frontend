@@ -10,6 +10,7 @@ import Foundation
 protocol ServiceProtocol {
     var authService: AuthenticationServiceProtocol { get set }
     var userService: UserServiceProtocol { get set }
+    var gratitudeService: GratitudeServiceProtocol { get set }
 }
 
 class ServiceImpl: ServiceProtocol {
@@ -19,6 +20,7 @@ class ServiceImpl: ServiceProtocol {
     
     var authService: AuthenticationServiceProtocol
     var userService: UserServiceProtocol
+    var gratitudeService: GratitudeServiceProtocol
     
     init() {
         self.networkService = NetworkService()
@@ -31,16 +33,22 @@ class ServiceImpl: ServiceProtocol {
             networkService: networkService,
             tokenManager: tokenManager
         )
+        self.gratitudeService = GratitudeService(
+            networkService: networkService,
+            tokenManager: tokenManager
+        )
     }
 }
 
 class StubService: ServiceProtocol {
     var authService: AuthenticationServiceProtocol
     var userService: UserServiceProtocol
+    var gratitudeService: GratitudeServiceProtocol
     
     init() {
         self.authService = StubAuthenticationService()
         self.userService = StubUserService()
+        self.gratitudeService = StubGratitudeService()
     }
 }
 

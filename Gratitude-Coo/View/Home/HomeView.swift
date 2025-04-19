@@ -109,7 +109,7 @@ struct HomeView: View {
                         userName: "Brandnew",
                         userImage: nil,
                         message: "오늘 회사에서 도움을 준 지민이에게 감사해요. 항상 친절하게 대해주셔서 감사합니다.",
-                        likeCount: 999,
+                        //                        likeCount: 999,
                         //            commentCount: 999,
                         date: Date(),
                         messageType: type
