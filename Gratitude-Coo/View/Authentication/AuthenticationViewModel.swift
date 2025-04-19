@@ -28,8 +28,6 @@ class AuthenticationViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var error: AuthError?
     
-    var userId: String?
-    
     private var container: DIContainer
     private var subscriptions = Set<AnyCancellable>()
     private var modelContext: ModelContext

@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum NetworkError: Error {
+enum NetworkError: Error, Equatable {
     case invalidRequest
     case invalidResponse
     case requestFailed(Error)
@@ -15,6 +15,28 @@ enum NetworkError: Error {
     case decodingFailed(DecodingError)
     case unauthorized
     case unknown(Error)
+    
+    static func == (lhs: NetworkError, rhs: NetworkError) -> Bool {
+        switch (lhs, rhs) {
+        case (.invalidRequest, .invalidRequest),
+             (.invalidResponse, .invalidResponse),
+             (.unauthorized, .unauthorized):
+            return true
+        case (.requestFailed, .requestFailed):
+            // requestFailed를 단순 비교 (Error는 Equatable이 아니므로)
+            return true
+        case (.httpError(let lhsCode, _), .httpError(let rhsCode, _)):
+            return lhsCode == rhsCode
+        case (.decodingFailed, .decodingFailed):
+            // DecodingError도 Equatable이 아니므로 단순 비교
+            return true
+        case (.unknown, .unknown):
+            // Error는 Equatable이 아니므로 단순 비교
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 extension NetworkError: LocalizedError {

@@ -47,6 +47,7 @@ struct GratitudeMessage: View {
                     } label: {
                         Image(systemName: "ellipsis")
                             .foregroundColor(.txPrimary)
+                            .font(.system(size: 20))
                             .padding(8)
                             .background(Circle().fill(Color.clear))
                     }
@@ -84,6 +85,7 @@ struct GratitudeMessage: View {
                     HStack(spacing: 4) {
                         Image(systemName: "heart")
                             .foregroundColor(.red)
+                            .font(.system(size: 20))
                         Text("\(likeCount)")
                             .textStyle(size: .footnote, weight: .regular, color: .txPrimary)
                     }
@@ -98,6 +100,7 @@ struct GratitudeMessage: View {
                  } label: {
                  HStack(spacing: 4) {
                  Image(systemName: "bubble.left")
+                 .font(.system(size: 20))
                  .foregroundColor(.txSecondary)
                  Text("\(commentCount)")
                  .textStyle(size: .footnote, weight: .regular, color: .txPrimary)

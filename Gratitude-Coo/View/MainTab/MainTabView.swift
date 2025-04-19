@@ -19,7 +19,6 @@ struct MainTabView: View {
                     switch tab {
                     case .home:
                         HomeView()
-                        
                     case .search:
                         SearchView()
                     }
@@ -27,7 +26,7 @@ struct MainTabView: View {
                 .tabItem {
                     Label {
                         Text(tab.title)
-                            .font(.system(size: 13))
+                            .font(.system(size: 16))
                             .fontWeight(.bold)
                     } icon: {
                         switch tab {

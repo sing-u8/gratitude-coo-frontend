@@ -9,36 +9,60 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
+    @EnvironmentObject private var container: DIContainer
+    @Environment(\.modelContext) private var modelContext
+    
     @State private var selectedType: MessageType = .fromSelfToSelf
     @State private var showWriteMessage = false
+    @State private var showSettings = false
+    @State private var showProfileEdit = false
     
     @Query private var currentUser: [User]
     
-    
     var body: some View {
-        VStack(spacing: 0) {
-            profileSection
-            buttonSection
-            messageSection
-        }
-        .background(Color.bg)
-        .sheet(isPresented: $showWriteMessage) {
-            // TODO: 감사메시지 작성 화면
-            Text("감사메시지 작성 화면")
-        }.onAppear {
-            print("currentUser: \(String(describing: currentUser.first?.id)) - \(String(describing: currentUser.first?.nickname)) - \(String(describing: currentUser.first?.name))")
+        NavigationStack {
+            VStack(spacing: 0) {
+                profileSection
+                buttonSection
+                messageSection
+            }
+            .background(Color.bg)
+            .sheet(isPresented: $showWriteMessage) {
+                // TODO: 감사메시지 작성 화면
+                Text("감사메시지 작성 화면")
+            }
+            .navigationDestination(isPresented: $showSettings) {
+                UserSettingsView()
+            }
+            .navigationDestination(isPresented: $showProfileEdit) {
+                UserProfileEditView(viewModel: .init(container: container, modelContext: modelContext))
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .foregroundColor(.txPrimary)
+                            .font(.system(size:20))
+                            .padding(8)
+                            .background(Circle().fill(Color.clear))
+                    }
+                }
+            }
         }
     }
     
     private var profileSection: some View {
         MainUserProfile(
-            userName: "Nickname",
+            userName: currentUser.first?.nickname ?? "Nickname",
             image: nil,
             sentGratitude: 9999,
             receivedGratitude: 9999
         )
         .padding(.horizontal, 16)
-        .padding(.vertical, 24)
+        .padding(.bottom, 24)
+        
     }
     
     private var buttonSection: some View {
@@ -55,7 +79,7 @@ struct HomeView: View {
                 title: "프로필 편집",
                 mode: .outlined,
                 action: {
-                    // TODO: 프로필 편집 화면으로 이동
+                    showProfileEdit = true
                 }
             )
         }

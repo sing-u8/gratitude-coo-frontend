@@ -9,6 +9,7 @@ import Foundation
 
 protocol ServiceProtocol {
     var authService: AuthenticationServiceProtocol { get set }
+    var userService: UserServiceProtocol { get set }
 }
 
 class ServiceImpl: ServiceProtocol {
@@ -17,6 +18,7 @@ class ServiceImpl: ServiceProtocol {
     private let tokenManager: TokenManagerProtocol
     
     var authService: AuthenticationServiceProtocol
+    var userService: UserServiceProtocol
     
     init() {
         self.networkService = NetworkService()
@@ -25,14 +27,20 @@ class ServiceImpl: ServiceProtocol {
             networkService: networkService,
             tokenManager: tokenManager
         )
+        self.userService = UserService(
+            networkService: networkService,
+            tokenManager: tokenManager
+        )
     }
 }
 
 class StubService: ServiceProtocol {
     var authService: AuthenticationServiceProtocol
+    var userService: UserServiceProtocol
     
     init() {
         self.authService = StubAuthenticationService()
+        self.userService = StubUserService()
     }
 }
 

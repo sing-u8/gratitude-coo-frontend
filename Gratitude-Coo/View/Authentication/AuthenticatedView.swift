@@ -11,8 +11,8 @@ import SwiftData
 struct AuthenticatedView: View {
     
     @EnvironmentObject var container: DIContainer
-    @Environment(\.modelContext) var modelContext
     @StateObject var authViewModel: AuthenticationViewModel
+    @Environment(\.modelContext) var modelContext
     
     var body: some View {
         VStack {

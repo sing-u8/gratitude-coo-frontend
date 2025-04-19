@@ -1,7 +1,14 @@
 import SwiftUI
+import SwiftData
 
-struct SettingsView: View {
+struct UserSettingsView: View {
+    @EnvironmentObject var authViewModel: AuthenticationViewModel
+    
     @State private var showingLogoutAlert = false
+    @State private var name: String? = ""
+    @State private var nickname: String? = ""
+    
+    @Query private var currentUser: [User]
     
     var body: some View {
         VStack(spacing: 0) {
@@ -18,7 +25,7 @@ struct SettingsView: View {
                         Text("닉네임")
                             .textStyle(size: .body, weight: .bold, color: Color.txPrimary)
                         Spacer()
-                        Text("Brandnew")
+                        Text(currentUser.first?.nickname ?? "")
                             .textStyle(size: .body, weight: .bold, color: Color.txPrimary)
                     }
                     .padding(.vertical, 8)
@@ -27,7 +34,7 @@ struct SettingsView: View {
                         Text("이름")
                             .textStyle(size: .body, weight: .bold, color: Color.txPrimary)
                         Spacer()
-                        Text("박신규")
+                        Text(currentUser.first?.name ?? "")
                             .textStyle(size: .body, weight: .bold, color: Color.txPrimary)
                     }
                     .padding(.vertical, 8)
@@ -56,7 +63,7 @@ struct SettingsView: View {
         .alert("로그아웃", isPresented: $showingLogoutAlert) {
             Button("취소", role: .cancel) { }
             Button("로그아웃", role: .destructive) {
-                // TODO: 로그아웃 처리
+                authViewModel.send(action: .logout)
             }
         } message: {
             Text("정말 로그아웃 하시겠습니까?")
@@ -67,6 +74,6 @@ struct SettingsView: View {
 
 #Preview {
     NavigationView {
-        SettingsView()
+        UserSettingsView()
     }
 }

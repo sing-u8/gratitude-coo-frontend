@@ -41,6 +41,7 @@ struct BtStyle: ButtonStyle {
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(borderColor, lineWidth: strokeWidth)
             )
+            .contentShape(Rectangle())
             .opacity(configuration.isPressed ? 0.5 : 1)
     }
 }

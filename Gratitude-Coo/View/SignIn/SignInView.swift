@@ -61,7 +61,6 @@ struct SignInView: View {
                         title: "Sign In",
                         mode: .filled,
                         action: {
-                            // Complete sign in and navigate to home
                             authViewModel.send(action: .login(email: email, password: password))
                             isSignInComplete = true
                         },

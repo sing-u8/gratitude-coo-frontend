@@ -1,10 +1,25 @@
 import SwiftUI
+import SwiftData
 
-struct ProfileEditView: View {
-    @State private var nickname: String = "N"
+struct UserProfileEditView: View {
+    
+    @State private var nickname: String = ""
     @State private var name: String = ""
     @State private var isShowingImagePicker = false
     @State private var selectedImage: UIImage?
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    
+    @Query private var currentUser: [User]
+    @Environment(\.dismiss) private var dismiss
+    
+    @StateObject var viewModel: UserProfileEditViewModel
+    
+    private let validator = UserProfileValidator()
+    
+    private var isSaveButtonEnabled: Bool {
+        validator.validate(name: name, nickname: nickname)
+    }
     
     var body: some View {
         VStack(spacing: 8) {
@@ -45,8 +60,9 @@ struct ProfileEditView: View {
                     title: "Save Changes",
                     mode: .filled,
                     action: {
-                        
-                    }
+                        saveChanges()
+                    },
+                    color: isSaveButtonEnabled ? Color.hlPri : Color.gray.opacity(0.8)
                 )
                 .frame(height: 56)
                 .listRowBackground(Color.clear)
@@ -62,13 +78,45 @@ struct ProfileEditView: View {
             
             Spacer()
             
-            
         }
         .background(Color.bg)
         .navigationTitle("프로필 편집")
         .sheet(isPresented: $isShowingImagePicker) {
             ImagePicker(selectedImage: $selectedImage)
         }
+        .task {
+            if let user = currentUser.first {
+                nickname = user.nickname ?? ""
+                name = user.name ?? ""
+            }
+        }
+        .alert(alertMessage, isPresented: $showAlert) {
+            Button("OK", role: .cancel) { }
+        }
+        .onChange(of: viewModel.isSuccessful) { _, newValue in
+            if newValue {
+                dismiss()
+            }
+        }
+        .onChange(of: viewModel.error) { _, error in
+            if let error = error {
+                alertMessage = "프로필 수정 실패: \(error.localizedDescription)"
+                showAlert = true
+            }
+        }
+        .overlay {
+            if viewModel.isLoading {
+                ProgressView()
+            }
+        }
+    }
+    
+    private func saveChanges() {
+        viewModel.send(action: .updateProfile(
+            name: name,
+            nickname: nickname,
+            image: selectedImage
+        ))
     }
 }
 
@@ -111,8 +159,12 @@ struct ImagePicker: UIViewControllerRepresentable {
     }
 }
 
-#Preview {
-    NavigationView {
-        ProfileEditView()
-    }
-}
+//#Preview {
+//    let previewContainer = DIContainer.stub
+//    let previewContext = ModelContext(ModelContainer(for: User.self).mainContext)
+//    
+//    return NavigationView {
+//        UserProfileEditView(viewModel: .init(container: previewContainer, modelContext: previewContext))
+//            .environmentObject(previewContainer)
+//    }
+//}
