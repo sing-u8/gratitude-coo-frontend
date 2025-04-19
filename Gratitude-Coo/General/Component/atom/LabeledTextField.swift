@@ -16,21 +16,28 @@ struct LabeledTextField: View {
             if isSecure {
                 SecureField(placeholder, text: $text)
                     .padding()
-                    .background(Color.white)
-                    .cornerRadius(8)
-                    .overlay(
+                    .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            .fill(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            )
                     )
+                    .foregroundColor(.txPrimary)
             } else {
                 TextField(placeholder, text: $text)
+                    
                     .padding()
-                    .background(Color.white)
-                    .cornerRadius(8)
-                    .overlay(
+                    .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            .fill(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            )
                     )
+                    .foregroundColor(.txPrimary)
             }
         }
     }
@@ -54,4 +61,4 @@ struct LabeledTextField: View {
         .padding()
     }
     .background(Color.bg)
-} 
+}
