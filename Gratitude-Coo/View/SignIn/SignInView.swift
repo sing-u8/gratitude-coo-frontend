@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SignInView: View {
     
@@ -106,7 +107,14 @@ struct SignInView: View {
 }
 
 #Preview {
+    
+    let _container: DIContainer = .stub
+    let _config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let _modelContainer = try! ModelContainer(for: User.self, configurations: _config)
+        
     SignInView()
-        .environmentObject(AuthenticationViewModel(container: .stub))
+        .environmentObject(AuthenticationViewModel(container: .stub, modelContext: _modelContainer.mainContext))
+    
+    
     
 }

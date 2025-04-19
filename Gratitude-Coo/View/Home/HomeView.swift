@@ -6,10 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
     @State private var selectedType: MessageType = .fromSelfToSelf
     @State private var showWriteMessage = false
+    
+    @Query private var currentUser: [User]
+    
     
     var body: some View {
         VStack(spacing: 0) {
@@ -21,6 +25,8 @@ struct HomeView: View {
         .sheet(isPresented: $showWriteMessage) {
             // TODO: 감사메시지 작성 화면
             Text("감사메시지 작성 화면")
+        }.onAppear {
+            print("currentUser: \(String(describing: currentUser.first?.id)) - \(String(describing: currentUser.first?.nickname)) - \(String(describing: currentUser.first?.name))")
         }
     }
     

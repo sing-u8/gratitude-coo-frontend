@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+// Combine에 대해서 공부하기
 protocol AuthenticationServiceProtocol {
     func register(email: String, password: String) -> AnyPublisher<Void, AuthError>
     func login(email: String, password: String) -> AnyPublisher<User, AuthError>

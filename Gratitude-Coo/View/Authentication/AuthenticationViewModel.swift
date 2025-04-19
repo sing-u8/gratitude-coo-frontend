@@ -7,17 +7,16 @@
 
 import Foundation
 import Combine
-import AuthenticationServices
+import SwiftData
+
 
 enum AuthenticationState {
     case unauthenticated
     case authenticated
 }
 
-// todo: DI container에서 주입받기
 class AuthenticationViewModel: ObservableObject {
     
-    // 필요에 따라 프로퍼티를 더 추가할 수 있습니다.
     enum Action {
         case checkAuthenticationState
         case login(email: String, password: String)
@@ -33,20 +32,45 @@ class AuthenticationViewModel: ObservableObject {
     
     private var container: DIContainer
     private var subscriptions = Set<AnyCancellable>()
+    private var modelContext: ModelContext
     
-    init(container: DIContainer) {
+    init(container: DIContainer, modelContext: ModelContext) {
         self.container = container
+        self.modelContext = modelContext
+    }
+    
+    private func saveUser(_ user: User) {
+        // 기존 사용자 데이터 삭제
+        let descriptor = FetchDescriptor<User>()
+        if let existingUsers = try? modelContext.fetch(descriptor) {
+            existingUsers.forEach { modelContext.delete($0) }
+        }
+        
+        // 새 사용자 데이터 저장
+        modelContext.insert(user)
+        try? modelContext.save()
+    }
+    
+    private func clearUserData() {
+        let descriptor = FetchDescriptor<User>()
+        if let existingUsers = try? modelContext.fetch(descriptor) {
+            existingUsers.forEach { modelContext.delete($0) }
+            try? modelContext.save()
+        }
     }
     
     func send(action: Action) {
         switch action {
         case .checkAuthenticationState:
-            if let userId = container.service.authService.checkAuthenticationState() {
-                self.userId = userId
-                authenticationState = .authenticated
+            if container.service.authService.checkAuthenticationState() != nil {
+                let descriptor = FetchDescriptor<User>()
+                if let _ = try? modelContext.fetch(descriptor).first {
+                    authenticationState = .authenticated
+                }
             } else {
                 authenticationState = .unauthenticated
             }
+            
         case .login(let email, let password):
             isLoading = true
             
@@ -58,11 +82,20 @@ class AuthenticationViewModel: ObservableObject {
                         self?.error = error
                     }
                 } receiveValue: { [weak self] user in
-                    print("userId: \(user.id), email: \(user.email), name: \(String(describing: user.name))")
-                    self?.userId = "\(user.id)"
-                    self?.authenticationState = .authenticated
+                    guard let self = self else { return }
+                    
+                    let userModel = User(
+                        id: user.id,
+                        email: user.email,
+                        name: user.name,
+                        nickname: user.nickname,
+                        profileImage: user.profileImage
+                    )
+                    self.saveUser(userModel)
+                    self.authenticationState = .authenticated
                 }
                 .store(in: &subscriptions)
+            
         case .register(let email, let password):
             isLoading = true
             
@@ -74,10 +107,10 @@ class AuthenticationViewModel: ObservableObject {
                         self?.error = error
                     }
                 } receiveValue: { [weak self] _ in
-                    // 회원가입 후 자동 로그인 또는 로그인 화면으로 이동
                     self?.send(action: .login(email: email, password: password))
                 }
                 .store(in: &subscriptions)
+            
         case .logout:
             isLoading = true
             
@@ -89,7 +122,7 @@ class AuthenticationViewModel: ObservableObject {
                         self?.error = error
                     }
                 } receiveValue: { [weak self] _ in
-                    self?.userId = nil
+                    self?.clearUserData()
                     self?.authenticationState = .unauthenticated
                 }
                 .store(in: &subscriptions)
