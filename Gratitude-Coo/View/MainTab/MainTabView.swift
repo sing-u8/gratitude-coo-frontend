@@ -10,6 +10,8 @@ import SwiftUI
 struct MainTabView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
     @EnvironmentObject var container: DIContainer
+    @Environment(\.modelContext) private var modelContext
+    
     @State private var selectedTab: MainTabType = .home
     
     var body: some View {
@@ -18,7 +20,7 @@ struct MainTabView: View {
                 Group {
                     switch tab {
                     case .home:
-                        HomeView()
+                        HomeView(container: container, modelContext: modelContext)
                     case .search:
                         SearchView()
                     }

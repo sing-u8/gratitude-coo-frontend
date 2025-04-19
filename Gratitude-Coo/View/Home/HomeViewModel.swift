@@ -38,7 +38,7 @@ class HomeViewModel: ObservableObject {
         self.container = container
         self.modelContext = modelContext
         
-        fetchCurrentUserId()
+//        fetchCurrentUserId()
     }
     
     // MARK: - Methods

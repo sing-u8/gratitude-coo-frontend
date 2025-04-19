@@ -9,15 +9,23 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
-    @EnvironmentObject private var container: DIContainer
-    @Environment(\.modelContext) private var modelContext
+    private let container: DIContainer
+    private let modelContext: ModelContext
     
     @State private var selectedType: MessageType = .fromSelfToSelf
     @State private var showWriteMessage = false
     @State private var showSettings = false
     @State private var showProfileEdit = false
     
+    @StateObject private var viewModel: HomeViewModel
+    
     @Query private var currentUser: [User]
+    
+    init(container: DIContainer, modelContext: ModelContext) {
+        self.container = container
+        self.modelContext = modelContext
+        _viewModel = StateObject(wrappedValue: HomeViewModel(container: container, modelContext: modelContext))
+    }
     
     var body: some View {
         NavigationStack {
@@ -122,6 +130,6 @@ struct HomeView: View {
     }
 }
 
-#Preview {
-    HomeView()
-}
+//#Preview {
+//    HomeView()
+//}
