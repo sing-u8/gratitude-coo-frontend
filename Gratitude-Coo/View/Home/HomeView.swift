@@ -34,9 +34,8 @@ struct HomeView: View {
                 messageSection
             }
             .background(Color.bg)
-            .sheet(isPresented: $showWriteMessage) {
-                // TODO: 감사메시지 작성 화면
-                Text("감사메시지 작성 화면")
+            .navigationDestination(isPresented: $showWriteMessage) {
+                CreateGratitudeView(container: container, modelContext: modelContext)
             }
             .navigationDestination(isPresented: $showSettings) {
                 UserSettingsView()
