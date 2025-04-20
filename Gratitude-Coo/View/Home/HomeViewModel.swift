@@ -310,6 +310,36 @@ class HomeViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Delete Gratitude Message
+    func deleteGratitudeMessage(id: Int) {
+        return container.service.gratitudeService.deleteGratitude(id: id)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    guard let self = self else { return }
+                    if case .failure(let error) = completion {
+                        self.errorMessage = error.localizedDescription
+                    }
+                },
+                receiveValue: { [weak self] msgId in
+                    guard let self = self else { return }
+                    self.removeMessageFromLocalState(id: msgId)
+                }
+            ).store(in: &cancellables)
+    }
+    
+    // 로컬 상태에서 메시지 제거
+    private func removeMessageFromLocalState(id: Int) {
+        switch selectedType {
+        case .fromSelfToSelf:
+            selfToSelfMessages.removeAll { $0.id == id }
+        case .fromSelfToOther:
+            selfToOtherMessages.removeAll { $0.id == id }
+        case .fromOtherToSelf:
+            otherToSelfMessages.removeAll { $0.id == id }
+        }
+    }
+    
     // 선택된 타입 변경
     func setSelectedType(_ type: MessageType) {
         selectedType = type
@@ -348,4 +378,4 @@ class HomeViewModel: ObservableObject {
             return hasOtherToSelfMoreData
         }
     }
-} 
+}

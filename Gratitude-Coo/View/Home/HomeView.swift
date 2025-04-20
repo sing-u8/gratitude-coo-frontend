@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import Combine
 
 struct HomeView: View {
     private let container: DIContainer
@@ -17,6 +18,7 @@ struct HomeView: View {
     @State private var showWriteMessage = false
     @State private var showSettings = false
     @State private var showProfileEdit = false
+    @State private var messageToDelete: Int? = nil
     
     @Query private var currentUser: [User]
     
@@ -74,6 +76,27 @@ struct HomeView: View {
                     if let errorMessage = viewModel.errorMessage {
                         Text(errorMessage)
                     }
+                }
+            )
+            .alert(
+                "메시지 삭제",
+                isPresented: .init(
+                    get: { messageToDelete != nil },
+                    set: { if !$0 { messageToDelete = nil } }
+                ),
+                actions: {
+                    Button("취소", role: .cancel) {
+                        messageToDelete = nil
+                    }
+                    Button("삭제", role: .destructive) {
+                        if let id = messageToDelete {
+                            viewModel.deleteGratitudeMessage(id: id)
+                        }
+                        messageToDelete = nil
+                    }
+                },
+                message: {
+                    Text("정말 이 메시지를 삭제하시겠습니까?")
                 }
             )
         }
@@ -143,7 +166,10 @@ struct HomeView: View {
                             userImage: nil,
                             message: message.contents,
                             date: Date(), // API 응답에 날짜 필드가 없으므로 현재 날짜 사용
-                            messageType: type
+                            messageType: type,
+                            onDelete: {
+                                deleteMessage(id: message.id)
+                            }
                         )
                     }
                     
@@ -231,6 +257,11 @@ struct HomeView: View {
         case .fromOtherToSelf:
             return "아직 받은 감사 메시지가 없습니다.\n다른 사람에게 먼저 감사 메시지를 보내보세요."
         }
+    }
+    
+    // 메시지 삭제 함수
+    private func deleteMessage(id: Int) {
+        messageToDelete = id
     }
 }
 

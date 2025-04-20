@@ -4,7 +4,7 @@ import Combine
 protocol GratitudeServiceProtocol {
     func createGratitude(_ dto: CreateGratitudeDto) -> AnyPublisher<GratitudeResponse, GratitudeError>
     func updateGratitude(id: Int, dto: UpdateGratitudeDto) -> AnyPublisher<GratitudeResponse, GratitudeError>
-    func deleteGratitude(id: Int) -> AnyPublisher<Bool, GratitudeError>
+    func deleteGratitude(id: Int) -> AnyPublisher<Int, GratitudeError>
     func getGratitudeList(_ dto: GetGratitudeDto) -> AnyPublisher<GetGratitudeResponseDto, GratitudeError>
     func toggleGratitudeLike(id: Int) -> AnyPublisher<GratitudeLikeResponse, GratitudeError>
     func getGratitudeLikeCount(id: Int) -> AnyPublisher<GratitudeLikeCountResponse, GratitudeError>
@@ -42,15 +42,23 @@ class GratitudeService: GratitudeServiceProtocol {
             .eraseToAnyPublisher()
     }
     
-    func deleteGratitude(id: Int) -> AnyPublisher<Bool, GratitudeError> {
+    func deleteGratitude(id: Int) -> AnyPublisher<Int, GratitudeError> {
         guard let accessToken = try? tokenManager.getAccessToken() else {
+            print("GratitudeService - 토큰 없음 오류")
             return Fail(error: GratitudeError.unauthorized).eraseToAnyPublisher()
         }
         
+        print("GratitudeService - 삭제 요청: ID \(id)")
         let endpoint = GratitudeEndpoint.deleteGratitude(id: id, accessToken: accessToken)
+        
         return networkService.request(endpoint)
-            .map { (_: [String: Never]) in true }
-            .mapError { GratitudeError.mapFromNetworkError($0) }
+            .mapError { error in 
+                print("GratitudeService - 네트워크 에러: \(error)")
+                return GratitudeError.mapFromNetworkError(error)
+            }
+            .handleEvents(receiveOutput: { success in
+                print("GratitudeService - 삭제 성공: \(success)")
+            })
             .eraseToAnyPublisher()
     }
     
@@ -122,8 +130,8 @@ class StubGratitudeService: GratitudeServiceProtocol {
         .eraseToAnyPublisher()
     }
     
-    func deleteGratitude(id: Int) -> AnyPublisher<Bool, GratitudeError> {
-        return Just(true)
+    func deleteGratitude(id: Int) -> AnyPublisher<Int, GratitudeError> {
+        return Just(1)
             .setFailureType(to: GratitudeError.self)
             .eraseToAnyPublisher()
     }
