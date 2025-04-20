@@ -121,6 +121,7 @@ struct HomeView: View {
             TabView(selection: $viewModel.selectedType) {
                 ForEach(MessageType.allCases, id: \.self) { type in
                     messageList(for: type)
+                        .tag(type)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
@@ -129,7 +130,7 @@ struct HomeView: View {
     
     private func messageList(for type: MessageType) -> some View {
         ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 16) {
+            VStack(spacing: 16) {
                 // 로딩 중이고 메시지가 없는 경우 스켈레톤 표시
                 if viewModel.isLoading(for: type) && viewModel.messages(for: type).isEmpty {
                     ForEach(0..<3, id: \.self) { _ in
@@ -145,10 +146,6 @@ struct HomeView: View {
                             date: Date(), // API 응답에 날짜 필드가 없으므로 현재 날짜 사용
                             messageType: type
                         )
-                        .onAppear {
-                            // 페이지네이션: 마지막 아이템이 보이면 다음 페이지 로드
-                            viewModel.loadMoreIfNeeded(for: type, currentItem: message)
-                        }
                     }
                     
                     // 더 로드 중인 경우 하단에 스켈레톤 표시
@@ -160,11 +157,48 @@ struct HomeView: View {
                     if !viewModel.isLoading(for: type) && viewModel.messages(for: type).isEmpty {
                         emptyStateView(for: type)
                     }
+                    
+                    // 더 보기 버튼
+                    if !viewModel.messages(for: type).isEmpty && viewModel.hasNextPage(for: type) {
+                        loadMoreButton(for: type)
+                    }
                 }
             }
             .padding(16)
         }
-        .tag(type)
+    }
+    
+    // 더 보기 버튼
+    private func loadMoreButton(for type: MessageType) -> some View {
+        Button {
+            if let lastMessage = viewModel.messages(for: type).last {
+                viewModel.loadMoreIfNeeded(for: type, currentItem: lastMessage)
+            }
+        } label: {
+            HStack {
+                Text("더 보기")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.txPrimary)
+                
+                if viewModel.isLoading(for: type) {
+                    ProgressView()
+                        .tint(.txPrimary)
+                        .scaleEffect(0.8)
+                } else {
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.txPrimary)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 44)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.txPrimary.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .padding(.top, 8)
+        .disabled(viewModel.isLoading(for: type))
     }
     
     // 데이터가 없는 경우 표시할 뷰

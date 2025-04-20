@@ -33,6 +33,11 @@ class HomeViewModel: ObservableObject {
     private var selfToOtherNextCursor: String?
     private var otherToSelfNextCursor: String?
     
+    // 더 로드할 데이터가 있는지 여부
+    private var hasSelfToSelfMoreData = true
+    private var hasSelfToOtherMoreData = true
+    private var hasOtherToSelfMoreData = true
+    
     // 기본 take 값
     private let defaultTake = 5
     
@@ -59,15 +64,15 @@ class HomeViewModel: ObservableObject {
                 // 선택된 탭에 따른 메시지 로드
                 switch newType {
                 case .fromSelfToSelf:
-                    if self.selfToSelfMessages.isEmpty && self.selfToSelfNextCursor == nil {
+                    if self.selfToSelfMessages.isEmpty && self.hasSelfToSelfMoreData {
                         self.loadSelfToSelfMessages(forceRefresh: true)
                     }
                 case .fromSelfToOther:
-                    if self.selfToOtherMessages.isEmpty && self.selfToOtherNextCursor == nil {
+                    if self.selfToOtherMessages.isEmpty && self.hasSelfToOtherMoreData {
                         self.loadSelfToOtherMessages(forceRefresh: true)
                     }
                 case .fromOtherToSelf:
-                    if self.otherToSelfMessages.isEmpty && self.otherToSelfNextCursor == nil {
+                    if self.otherToSelfMessages.isEmpty && self.hasOtherToSelfMoreData {
                         self.loadOtherToSelfMessages(forceRefresh: true)
                     }
                 }
@@ -109,9 +114,13 @@ class HomeViewModel: ObservableObject {
     func loadSelfToSelfMessages(forceRefresh: Bool = false) {
         if isSelfToSelfLoading { return }
         
+        // 더 로드할 데이터가 없다면 API 호출 중단
+        if !hasSelfToSelfMoreData && !forceRefresh { return }
+        
         if forceRefresh {
             selfToSelfMessages = []
             selfToSelfNextCursor = nil
+            hasSelfToSelfMoreData = true
         }
         
         isSelfToSelfLoading = true
@@ -137,8 +146,19 @@ class HomeViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] response in
                     guard let self = self else { return }
+                    
+                    print("Received messages: \(response.gratitudeList)")
+                    
+                    // 받아온 메시지 추가
                     self.selfToSelfMessages.append(contentsOf: response.gratitudeList)
+                    
+                    // 다음 페이지 커서 설정
                     self.selfToSelfNextCursor = response.nextCursor
+                    
+                    // 메시지가 없거나 기본 take보다 적은 경우 더 이상 데이터가 없는 것으로 간주
+                    if response.gratitudeList.isEmpty || response.gratitudeList.count < self.defaultTake {
+                        self.hasSelfToSelfMoreData = false
+                    }
                 }
             )
             .store(in: &cancellables)
@@ -148,9 +168,13 @@ class HomeViewModel: ObservableObject {
     func loadSelfToOtherMessages(forceRefresh: Bool = false) {
         if isSelfToOtherLoading { return }
         
+        // 더 로드할 데이터가 없다면 API 호출 중단
+        if !hasSelfToOtherMoreData && !forceRefresh { return }
+        
         if forceRefresh {
             selfToOtherMessages = []
             selfToOtherNextCursor = ""
+            hasSelfToOtherMoreData = true
         }
         
         isSelfToOtherLoading = true
@@ -176,8 +200,17 @@ class HomeViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] response in
                     guard let self = self else { return }
+                    
+                    // 받아온 메시지 추가
                     self.selfToOtherMessages.append(contentsOf: response.gratitudeList)
+                    
+                    // 다음 페이지 커서 설정
                     self.selfToOtherNextCursor = response.nextCursor
+                    
+                    // 메시지가 없거나 기본 take보다 적은 경우 더 이상 데이터가 없는 것으로 간주
+                    if response.gratitudeList.isEmpty || response.gratitudeList.count < self.defaultTake {
+                        self.hasSelfToOtherMoreData = false
+                    }
                 }
             )
             .store(in: &cancellables)
@@ -187,9 +220,13 @@ class HomeViewModel: ObservableObject {
     func loadOtherToSelfMessages(forceRefresh: Bool = false) {
         if isOtherToSelfLoading { return }
         
+        // 더 로드할 데이터가 없다면 API 호출 중단
+        if !hasOtherToSelfMoreData && !forceRefresh { return }
+        
         if forceRefresh {
             otherToSelfMessages = []
             otherToSelfNextCursor = nil
+            hasOtherToSelfMoreData = true
         }
         
         isOtherToSelfLoading = true
@@ -215,8 +252,17 @@ class HomeViewModel: ObservableObject {
                 },
                 receiveValue: { [weak self] response in
                     guard let self = self else { return }
+                    
+                    // 받아온 메시지 추가
                     self.otherToSelfMessages.append(contentsOf: response.gratitudeList)
+                    
+                    // 다음 페이지 커서 설정
                     self.otherToSelfNextCursor = response.nextCursor
+                    
+                    // 메시지가 없거나 기본 take보다 적은 경우 더 이상 데이터가 없는 것으로 간주
+                    if response.gratitudeList.isEmpty || response.gratitudeList.count < self.defaultTake {
+                        self.hasOtherToSelfMoreData = false
+                    }
                 }
             )
             .store(in: &cancellables)
@@ -226,15 +272,15 @@ class HomeViewModel: ObservableObject {
     func loadMoreIfNeeded(for type: MessageType, currentItem: GratitudeResponse) {
         switch type {
         case .fromSelfToSelf:
-            if isLastItem(currentItem, in: selfToSelfMessages) && selfToSelfNextCursor != nil {
+            if isLastItem(currentItem, in: selfToSelfMessages) && hasSelfToSelfMoreData {
                 loadSelfToSelfMessages()
             }
         case .fromSelfToOther:
-            if isLastItem(currentItem, in: selfToOtherMessages) && selfToOtherNextCursor != nil {
+            if isLastItem(currentItem, in: selfToOtherMessages) && hasSelfToOtherMoreData {
                 loadSelfToOtherMessages()
             }
         case .fromOtherToSelf:
-            if isLastItem(currentItem, in: otherToSelfMessages) && otherToSelfNextCursor != nil {
+            if isLastItem(currentItem, in: otherToSelfMessages) && hasOtherToSelfMoreData {
                 loadOtherToSelfMessages()
             }
         }
@@ -295,11 +341,11 @@ class HomeViewModel: ObservableObject {
     func hasNextPage(for type: MessageType) -> Bool {
         switch type {
         case .fromSelfToSelf:
-            return selfToSelfNextCursor != nil
+            return hasSelfToSelfMoreData
         case .fromSelfToOther:
-            return selfToOtherNextCursor != nil
+            return hasSelfToOtherMoreData
         case .fromOtherToSelf:
-            return otherToSelfNextCursor != nil
+            return hasOtherToSelfMoreData
         }
     }
 } 
