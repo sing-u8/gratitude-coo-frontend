@@ -9,24 +9,25 @@ import SwiftUI
 import SwiftData
 import Combine
 
-struct HomeView: View {
+struct FellowHomeView: View {
     private let container: DIContainer
     private let modelContext: ModelContext
+    private var fellowUser: User
     
-    @StateObject private var viewModel: HomeViewModel
+    @StateObject private var viewModel: FellowHomeViewModel
     
     @State private var showWriteMessage = false
-    @State private var showSettings = false
-    @State private var showProfileEdit = false
+    
     @State private var messageToDelete: Int? = nil
     @State private var messageToEdit: GratitudeResponse? = nil
     
     @Query private var currentUser: [User]
     
-    init(container: DIContainer, modelContext: ModelContext) {
+    init(container: DIContainer, modelContext: ModelContext, fellowUser: User) {
         self.container = container
         self.modelContext = modelContext
-        _viewModel = StateObject(wrappedValue: HomeViewModel(container: container, modelContext: modelContext))
+        _viewModel = StateObject(wrappedValue: FellowHomeViewModel(container: container, fellowUser: fellowUser))
+        self.fellowUser = fellowUser
     }
     
     var body: some View {
@@ -38,17 +39,11 @@ struct HomeView: View {
             }
             .background(Color.bg)
             .navigationDestination(isPresented: $showWriteMessage) {
-                CreateGratitudeView(container: container, modelContext: modelContext)
+                CreateGratitudeView(container: container, modelContext: modelContext, recipient: fellowUser)
                     .onDisappear {
                         // 메시지 작성 화면에서 돌아왔을 때 갱신
                         viewModel.refreshGratitudeCount()
                     }
-            }
-            .navigationDestination(isPresented: $showSettings) {
-                UserSettingsView()
-            }
-            .navigationDestination(isPresented: $showProfileEdit) {
-                UserProfileEditView(viewModel: .init(container: container, modelContext: modelContext))
             }
             .navigationDestination(item:$messageToEdit) { message in
                 UpdateGratitudeView(container: container, modelContext: modelContext, gratitudeMessage: message)
@@ -56,19 +51,6 @@ struct HomeView: View {
                         // 메시지 수정 화면에서 돌아왔을 때 갱신
                         viewModel.refreshGratitudeCount()
                     }
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showSettings = true
-                    } label: {
-                        Image(systemName: "gearshape")
-                            .foregroundColor(.txPrimary)
-                            .font(.system(size:20))
-                            .padding(8)
-                            .background(Circle().fill(Color.clear))
-                    }
-                }
             }
             .refreshable {
                 viewModel.refreshCurrentType()
@@ -121,7 +103,7 @@ struct HomeView: View {
     
     private var profileSection: some View {
         MainUserProfile(
-            userName: currentUser.first?.nickname ?? "Nickname",
+            userName: fellowUser.nickname ?? "Nickname",
             image: nil,
             sentGratitude: viewModel.gratitudeCount.sentCount,
             receivedGratitude: viewModel.gratitudeCount.receivedCount
@@ -133,20 +115,13 @@ struct HomeView: View {
     private var buttonSection: some View {
         HStack(spacing: 16) {
             GCButton(
-                title: "Create Gratitude",
+                title: "Send Gratitude",
                 mode: .filled,
                 action: {
                     showWriteMessage = true
                 }
             )
-            
-            GCButton(
-                title: "Modify Profile",
-                mode: .outlined,
-                action: {
-                    showProfileEdit = true
-                }
-            )
+            .frame(maxWidth: .infinity)
         }
         .frame(height: 48)
         .padding(.horizontal, 16)
@@ -179,17 +154,16 @@ struct HomeView: View {
                     // 메시지 목록 표시
                     ForEach(viewModel.messages(for: type), id: \.id) { message in
                         GratitudeMessage(
-                            id: currentUser.first?.id ?? 0,
+                            id: message.id,
                             userName: message.isAnonymous ? "익명" : (type == .fromSelfToOther ? message.recipient.nickname : message.author.nickname),
                             userImage: nil,
                             message: message.contents,
                             date: message.createdAt,
                             messageType: type,
-                            viewingUserId: currentUser.first?.id ?? 0,
+                            viewingUserId: fellowUser.id,
                             currentUserId: currentUser.first?.id ?? 0,
                             onEdit: {
-                                // 본인이 작성한 메시지만 수정 가능
-                                if type == .fromSelfToSelf || type == .fromSelfToOther {
+                                if type == .fromOtherToSelf {
                                     messageToEdit = message
                                 }
                             },

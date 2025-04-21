@@ -22,7 +22,7 @@ class CreateGratitudeViewModel: ObservableObject {
     private var currentUserId: Int = 0
     
     // 수신자 정보
-    @Published var recipient: Member?
+    @Published var recipient: User?
     
     // 메시지 내용
     @Published var messageContent: String = ""
@@ -43,7 +43,7 @@ class CreateGratitudeViewModel: ObservableObject {
     let maxCharacterCount = 1000
     
     // MARK: - Initialization
-    init(container: DIContainer, modelContext: ModelContext, recipient: Member? = nil) {
+    init(container: DIContainer, modelContext: ModelContext, recipient: User? = nil) {
         self.container = container
         self.modelContext = modelContext
         self.recipient = recipient
@@ -108,13 +108,7 @@ class CreateGratitudeViewModel: ObservableObject {
         let descriptor = FetchDescriptor<User>()
         if let user = try? modelContext.fetch(descriptor).first {
             // 실제 API에서는 Member 객체를 사용하여 recipient로 설정
-            self.recipient = Member(
-                id: user.id,
-                email: user.email,
-                name: user.name ?? "",
-                nickname: user.nickname ?? "",
-                profile: user.profileImage
-            )
+            self.recipient = user
         }
     }
 } 

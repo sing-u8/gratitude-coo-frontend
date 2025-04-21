@@ -22,7 +22,7 @@ struct MainTabView: View {
                     case .home:
                         HomeView(container: container, modelContext: modelContext)
                     case .search:
-                        SearchView(container: container)
+                        SearchView(container: container, modelContext: modelContext)
                     }
                 }
                 .tabItem {

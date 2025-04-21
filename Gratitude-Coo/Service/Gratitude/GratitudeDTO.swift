@@ -32,6 +32,7 @@ struct GratitudeResponse: Codable, Hashable {
     var author: Member
     var isAnonymous: Bool
     var visibility: Visibility
+    var createdAt: String
 }
 
 struct UpdateGratitudeResponse: Codable, Hashable {

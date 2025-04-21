@@ -7,32 +7,40 @@
 
 import SwiftUI
 import Combine
+import SwiftData
 
 struct SearchView: View {
     private let container: DIContainer
+    private let modelContext: ModelContext
     
     @StateObject private var viewModel: SearchViewModel
     
-    @State private var selectedUser: Member?
+    @State private var selectedFellowUser: User? = nil
     
-    init(container: DIContainer) {
+    init(container: DIContainer, modelContext: ModelContext) {
         self.container = container
+        self.modelContext = modelContext
         _viewModel = StateObject(wrappedValue: SearchViewModel(container: container))
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // 검색 영역
-            searchBar
-                .padding(.top, 12)
-            
-            // 회원 목록
-            memberListView
-                .padding(.top, 8)
+        NavigationStack {
+            VStack(spacing: 0) {
+                // 검색 영역
+                searchBar
+                    .padding(.top, 12)
+                
+                // 회원 목록
+                memberListView
+                    .padding(.top, 8)
+            }
+            .padding(.horizontal, 16)
+            .background(Color.bg)
+            .navigationTitle("Search User")
+            .navigationDestination(item: $selectedFellowUser) { user in
+                FellowHomeView(container: container, modelContext: modelContext, fellowUser: user)
+            }
         }
-        .padding(.horizontal, 16)
-        .background(Color.bg)
-        .navigationTitle("Search User")
     }
     
     private var searchBar: some View {
@@ -52,7 +60,6 @@ struct SearchView: View {
             if !viewModel.searchText.isEmpty {
                 Button {
                     viewModel.searchText = ""
-                    viewModel.searchMember(forceRefresh: true)
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.gray)
@@ -84,7 +91,7 @@ struct SearchView: View {
                         username: member.name,
                         image: nil,
                         onTap: {
-                            selectedUser = member
+                            fetchUserDetails(for: member)
                         }
                     )
                 }
@@ -168,5 +175,20 @@ struct SearchView: View {
         .padding(.vertical, 40)
         .frame(maxWidth: .infinity)
     }
+    
+    private func fetchUserDetails(for member: Member) {
+        // Member 객체를 User 객체로 변환
+        let user = User(
+            id: member.id,
+            email: member.email,
+            name: member.name,
+            nickname: member.nickname,
+            profileImage: member.profile
+        )
+        
+        // fellowUser에 할당하여 navigation 트리거
+        selectedFellowUser = user
+    }
 }
+
 

@@ -12,7 +12,7 @@ struct CreateGratitudeView: View {
     // 현재 날짜
     private let currentDate = Date()
     
-    init(container: DIContainer, modelContext: ModelContext, recipient: Member? = nil) {
+    init(container: DIContainer, modelContext: ModelContext, recipient: User? = nil) {
         _viewModel = StateObject(wrappedValue: CreateGratitudeViewModel(
             container: container,
             modelContext: modelContext,
@@ -135,12 +135,12 @@ struct CreateGratitudeView: View {
                 HStack(spacing: 4) {
                     // 수신자 프로필 아이콘
                     Avatar(
-                        userName: recipient.nickname,
+                        userName: recipient.nickname!,
                         image: nil,
                         size: .small,
                         borderColor: .limeGr
                     )
-                    Text(recipient.nickname)
+                    Text(recipient.nickname!)
                         .textStyle(size: .subheadline, weight: .medium, color: .txPrimary)
                 }
                 .padding(.vertical, 4)

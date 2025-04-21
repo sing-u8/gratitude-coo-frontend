@@ -121,7 +121,8 @@ class StubGratitudeService: GratitudeServiceProtocol {
             recipient: stubMember,
             author: stubMember,
             isAnonymous: dto.isAnonymous,
-            visibility: dto.visibility
+            visibility: dto.visibility,
+            createdAt: "2023-10-01T12:00:00Z",
         ))
         .setFailureType(to: GratitudeError.self)
         .eraseToAnyPublisher()
