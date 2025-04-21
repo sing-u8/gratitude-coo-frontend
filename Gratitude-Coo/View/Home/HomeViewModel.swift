@@ -28,6 +28,12 @@ class HomeViewModel: ObservableObject {
     // 현재 선택된 메시지 타입
     @Published var selectedType: MessageType = .fromSelfToSelf
     
+    // 유저의 작성한 또는 전달받은 메시지 수
+    @Published var gratitudeCount: GratitudeCountResponse = GratitudeCountResponse(sentCount: 0, receivedCount: 0)
+    
+    // 카운트 로딩 상태
+    @Published var isCountLoading = false
+    
     // 페이지네이션 관련
     private var selfToSelfNextCursor: String?
     private var selfToOtherNextCursor: String?
@@ -51,6 +57,9 @@ class HomeViewModel: ObservableObject {
         
         // selectedType이 변경될 때마다 메시지 로드
         setupTypeObserver()
+        
+        // 메시지 변경 시 카운트 업데이트 설정
+        //        setupCountObservers()
     }
     
     // MARK: - Setup
@@ -80,12 +89,44 @@ class HomeViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
+    // MARK: - Observers 이 정도까지는 필요하지 않은듯
+    //    private func setupCountObservers() {
+    //        // selfToSelfMessages 변경 시 카운트 업데이트
+    //        $selfToSelfMessages
+    //            .dropFirst()
+    //            .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
+    //            .sink { [weak self] _ in
+    //                self?.refreshGratitudeCount()
+    //            }
+    //            .store(in: &cancellables)
+    //
+    //        // selfToOtherMessages 변경 시 카운트 업데이트
+    //        $selfToOtherMessages
+    //            .dropFirst()
+    //            .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
+    //            .sink { [weak self] _ in
+    //                self?.refreshGratitudeCount()
+    //            }
+    //            .store(in: &cancellables)
+    //
+    //        // otherToSelfMessages 변경 시 카운트 업데이트
+    //        $otherToSelfMessages
+    //            .dropFirst()
+    //            .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
+    //            .sink { [weak self] _ in
+    //                self?.refreshGratitudeCount()
+    //            }
+    //            .store(in: &cancellables)
+    //    }
+    
     // MARK: - Methods
     private func fetchCurrentUserId() {
         // SwiftData를 사용하여 현재 사용자 ID를 가져오는 로직
         let descriptor = FetchDescriptor<User>()
         if let existingUsers = try? modelContext.fetch(descriptor).first {
             self.currentUserId = existingUsers.id
+            // 사용자 ID를 얻은 후 즉시 메시지 수 정보 가져오기
+            refreshGratitudeCount()
         }
         print("Current User ID in HomeViewModel: \(self.currentUserId)")
         // 초기 데이터 로드 (현재 선택된 탭만)
@@ -324,6 +365,8 @@ class HomeViewModel: ObservableObject {
                 receiveValue: { [weak self] msgId in
                     guard let self = self else { return }
                     self.removeMessageFromLocalState(id: msgId)
+                    // 메시지 삭제 후 카운트 갱신
+                    self.refreshGratitudeCount()
                 }
             ).store(in: &cancellables)
     }
@@ -377,5 +420,39 @@ class HomeViewModel: ObservableObject {
         case .fromOtherToSelf:
             return hasOtherToSelfMoreData
         }
+    }
+    
+    // MARK: - Gratitude Count
+    func refreshGratitudeCount() {
+        // 이미 로딩 중이거나 사용자 ID가 없으면 리턴
+        if isCountLoading || currentUserId == 0 { return }
+        
+        isCountLoading = true
+        
+        getGratitudeCount(userId: currentUserId)
+    }
+    
+    func getGratitudeCount(userId: Int) {
+        container.service.gratitudeService.getGratitudeCount(id: userId)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion:
+                    { [weak self] completion in
+                        guard let self = self else { return }
+                        
+                        self.isCountLoading = false
+                        
+                        if case .failure(let error) = completion {
+                            self.errorMessage = error.localizedDescription
+                        }
+                    },
+                receiveValue: { [weak self] response in
+                    guard let self = self else { return }
+                    
+                    self.gratitudeCount = response
+                    self.isCountLoading = false
+                }
+            )
+            .store(in: &cancellables)
     }
 }

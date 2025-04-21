@@ -7,6 +7,7 @@ enum GratitudeEndpoint {
     case getGratitudeList(dto: GetGratitudeDto, accessToken: String)
     case toggleGratitudeLike(id: Int, accessToken: String)
     case getGratitudeLikeCount(id: Int, accessToken: String)
+    case getGratitudeCount(id: Int, accessToken: String)
 }
 
 extension GratitudeEndpoint: APIEndpoint {
@@ -37,6 +38,8 @@ extension GratitudeEndpoint: APIEndpoint {
             return "/gratitude/\(id)/like"
         case .getGratitudeLikeCount(let id, _):
             return "/gratitude/\(id)/like/count"
+        case .getGratitudeCount(let id, _):
+            return "/gratitude/count/\(id)"
         }
     }
     
@@ -48,7 +51,7 @@ extension GratitudeEndpoint: APIEndpoint {
             return .put
         case .deleteGratitude:
             return .delete
-        case .getGratitudeList, .getGratitudeLikeCount:
+        case .getGratitudeList, .getGratitudeLikeCount, .getGratitudeCount:
             return .get
         case .toggleGratitudeLike:
             return .post
@@ -67,8 +70,6 @@ extension GratitudeEndpoint: APIEndpoint {
             ]
         case .updateGratitude(_, let dto, _):
             var body: [String: Any] = [:]
-            if let recipientId = dto.recipientId { body["recipientId"] = recipientId }
-            if let authorId = dto.authorId { body["authorId"] = authorId }
             if let contents = dto.contents { body["contents"] = contents }
             if let isAnonymous = dto.isAnonymous { body["isAnonymous"] = isAnonymous }
             if let visibility = dto.visibility { body["visibility"] = visibility.rawValue }
@@ -91,7 +92,8 @@ extension GratitudeEndpoint: APIEndpoint {
              .deleteGratitude(_, let accessToken),
              .getGratitudeList(_, let accessToken),
              .toggleGratitudeLike(_, let accessToken),
-             .getGratitudeLikeCount(_, let accessToken):
+             .getGratitudeLikeCount(_, let accessToken),
+             .getGratitudeCount(_, let accessToken):
             headers["Authorization"] = "Bearer \(accessToken)"
         }
         

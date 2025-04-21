@@ -19,6 +19,7 @@ struct HomeView: View {
     @State private var showSettings = false
     @State private var showProfileEdit = false
     @State private var messageToDelete: Int? = nil
+    @State private var messageToEdit: GratitudeResponse? = nil
     
     @Query private var currentUser: [User]
     
@@ -38,12 +39,23 @@ struct HomeView: View {
             .background(Color.bg)
             .navigationDestination(isPresented: $showWriteMessage) {
                 CreateGratitudeView(container: container, modelContext: modelContext)
+                    .onDisappear {
+                        // 메시지 작성 화면에서 돌아왔을 때 갱신
+                        viewModel.refreshGratitudeCount()
+                    }
             }
             .navigationDestination(isPresented: $showSettings) {
                 UserSettingsView()
             }
             .navigationDestination(isPresented: $showProfileEdit) {
                 UserProfileEditView(viewModel: .init(container: container, modelContext: modelContext))
+            }
+            .navigationDestination(item:$messageToEdit) { message in
+                UpdateGratitudeView(container: container, modelContext: modelContext, gratitudeMessage: message)
+                    .onDisappear {
+                        // 메시지 수정 화면에서 돌아왔을 때 갱신
+                        viewModel.refreshGratitudeCount()
+                    }
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -60,6 +72,11 @@ struct HomeView: View {
             }
             .refreshable {
                 viewModel.refreshCurrentType()
+                viewModel.refreshGratitudeCount()
+            }
+            .onAppear {
+                // 화면이 나타날 때 갱신
+                viewModel.refreshGratitudeCount()
             }
             .alert(
                 "오류",
@@ -106,8 +123,8 @@ struct HomeView: View {
         MainUserProfile(
             userName: currentUser.first?.nickname ?? "Nickname",
             image: nil,
-            sentGratitude: 9999,
-            receivedGratitude: 9999
+            sentGratitude: viewModel.gratitudeCount.sentCount,
+            receivedGratitude: viewModel.gratitudeCount.receivedCount
         )
         .padding(.horizontal, 16)
         .padding(.bottom, 24)
@@ -116,7 +133,7 @@ struct HomeView: View {
     private var buttonSection: some View {
         HStack(spacing: 16) {
             GCButton(
-                title: "감사메시지 작성",
+                title: "Create Gratitude",
                 mode: .filled,
                 action: {
                     showWriteMessage = true
@@ -124,7 +141,7 @@ struct HomeView: View {
             )
             
             GCButton(
-                title: "프로필 편집",
+                title: "Modify Profile",
                 mode: .outlined,
                 action: {
                     showProfileEdit = true
@@ -167,6 +184,12 @@ struct HomeView: View {
                             message: message.contents,
                             date: Date(), // API 응답에 날짜 필드가 없으므로 현재 날짜 사용
                             messageType: type,
+                            onEdit: {
+                                // 본인이 작성한 메시지만 수정 가능
+                                if type == .fromSelfToSelf || type == .fromSelfToOther {
+                                    messageToEdit = message
+                                }
+                            },
                             onDelete: {
                                 deleteMessage(id: message.id)
                             }

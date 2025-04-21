@@ -20,14 +20,12 @@ struct CreateGratitudeDto: Codable {
 }
 
 struct UpdateGratitudeDto: Codable {
-    let recipientId: Int?
-    let authorId: Int?
     let contents: String?
     let isAnonymous: Bool?
     let visibility: Visibility?
 }
 
-struct GratitudeResponse: Codable {
+struct GratitudeResponse: Codable, Hashable {
     var id: Int
     var contents: String
     var recipient: Member
@@ -35,6 +33,14 @@ struct GratitudeResponse: Codable {
     var isAnonymous: Bool
     var visibility: Visibility
 }
+
+struct UpdateGratitudeResponse: Codable, Hashable {
+    var id: Int
+    var contents: String
+    var isAnonymous: Bool
+    var visibility: Visibility
+}
+    
 
 struct GetGratitudeDto: Codable {
     let memberId: Int
@@ -44,7 +50,7 @@ struct GetGratitudeDto: Codable {
     let take: Int
 }
 
-struct GetGratitudeResponseDto: Codable {
+struct GetGratitudeResponse: Codable {
     let gratitudeList: [GratitudeResponse]
     let nextCursor: String?
     let count: Int
@@ -56,4 +62,9 @@ struct GratitudeLikeResponse: Codable {
 
 struct GratitudeLikeCountResponse: Codable {
     let count: Int
-} 
+}
+
+struct GratitudeCountResponse: Codable {
+    let sentCount: Int
+    let receivedCount: Int
+}

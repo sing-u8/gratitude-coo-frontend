@@ -3,7 +3,7 @@ import Combine
 import SwiftData
 import SwiftUI
 
-class CreateGratitudeViewModel: ObservableObject {
+class UpdateGratitudeViewModel: ObservableObject {
     enum SendState: Equatable {
         case idle
         case sending
@@ -29,10 +29,13 @@ class CreateGratitudeViewModel: ObservableObject {
     
     // 설정
     @Published var isAnonymous: Bool = false
-    @Published var visibility: Visibility = .PUBLIC
+    @Published var visibility: Visibility = .PRIVATE
     
     // 상태
     @Published var sendState: SendState = .idle
+    
+    // 수정할 메시지 ID
+    private let gratitudeId: Int
     
     // 메시지 보낼 수 있는지 여부
     var canSendMessage: Bool {
@@ -43,10 +46,16 @@ class CreateGratitudeViewModel: ObservableObject {
     let maxCharacterCount = 1000
     
     // MARK: - Initialization
-    init(container: DIContainer, modelContext: ModelContext, recipient: Member? = nil) {
+    init(container: DIContainer, modelContext: ModelContext, gratitudeMessage: GratitudeResponse) {
         self.container = container
         self.modelContext = modelContext
-        self.recipient = recipient
+        self.gratitudeId = gratitudeMessage.id
+        
+        // 기존 메시지 데이터로 초기화
+        self.messageContent = gratitudeMessage.contents
+        self.isAnonymous = gratitudeMessage.isAnonymous
+        self.visibility = gratitudeMessage.visibility
+        self.recipient = gratitudeMessage.recipient
         
         loadCurrentUser()
     }
@@ -55,30 +64,23 @@ class CreateGratitudeViewModel: ObservableObject {
         let descriptor = FetchDescriptor<User>()
         if let user = try? modelContext.fetch(descriptor).first {
             self.currentUserId = user.id
-            self.currentUserName = user.nickname ?? "사용자"
-            // 여기서 사용자 이미지를 로드할 수 있습니다 (있는 경우)
+            self.currentUserName = user.nickname ?? "User"
         }
     }
     
     // MARK: - Methods
-    func sendGratitudeMessage() {
+    func updateGratitudeMessage() {
         guard canSendMessage else { return }
-        guard let recipient = recipient else {
-            self.sendState = .failure("수신자를 선택해주세요")
-            return
-        }
         
         sendState = .sending
         
-        let dto = CreateGratitudeDto(
-            recipientId: recipient.id,
-            authorId: currentUserId,
+        let dto = UpdateGratitudeDto(
             contents: messageContent,
             isAnonymous: isAnonymous,
             visibility: visibility
         )
         
-        container.service.gratitudeService.createGratitude(dto)
+        container.service.gratitudeService.updateGratitude(id: gratitudeId, dto: dto)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -97,24 +99,6 @@ class CreateGratitudeViewModel: ObservableObject {
     }
     
     func reset() {
-        messageContent = ""
-        isAnonymous = false
-        visibility = .PRIVATE
         sendState = .idle
-    }
-    
-    // 자기 자신에게 메시지 보내기
-    func setSelfAsRecipient() {
-        let descriptor = FetchDescriptor<User>()
-        if let user = try? modelContext.fetch(descriptor).first {
-            // 실제 API에서는 Member 객체를 사용하여 recipient로 설정
-            self.recipient = Member(
-                id: user.id,
-                email: user.email,
-                name: user.name ?? "",
-                nickname: user.nickname ?? "",
-                profile: user.profileImage
-            )
-        }
     }
 } 

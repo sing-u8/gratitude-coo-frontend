@@ -3,11 +3,12 @@ import Combine
 
 protocol GratitudeServiceProtocol {
     func createGratitude(_ dto: CreateGratitudeDto) -> AnyPublisher<GratitudeResponse, GratitudeError>
-    func updateGratitude(id: Int, dto: UpdateGratitudeDto) -> AnyPublisher<GratitudeResponse, GratitudeError>
+    func updateGratitude(id: Int, dto: UpdateGratitudeDto) -> AnyPublisher<UpdateGratitudeResponse, GratitudeError>
     func deleteGratitude(id: Int) -> AnyPublisher<Int, GratitudeError>
-    func getGratitudeList(_ dto: GetGratitudeDto) -> AnyPublisher<GetGratitudeResponseDto, GratitudeError>
+    func getGratitudeList(_ dto: GetGratitudeDto) -> AnyPublisher<GetGratitudeResponse, GratitudeError>
     func toggleGratitudeLike(id: Int) -> AnyPublisher<GratitudeLikeResponse, GratitudeError>
     func getGratitudeLikeCount(id: Int) -> AnyPublisher<GratitudeLikeCountResponse, GratitudeError>
+    func getGratitudeCount(id: Int) -> AnyPublisher<GratitudeCountResponse, GratitudeError>
 }
 
 class GratitudeService: GratitudeServiceProtocol {
@@ -31,7 +32,7 @@ class GratitudeService: GratitudeServiceProtocol {
             .eraseToAnyPublisher()
     }
     
-    func updateGratitude(id: Int, dto: UpdateGratitudeDto) -> AnyPublisher<GratitudeResponse, GratitudeError> {
+    func updateGratitude(id: Int, dto: UpdateGratitudeDto) -> AnyPublisher<UpdateGratitudeResponse, GratitudeError> {
         guard let accessToken = try? tokenManager.getAccessToken() else {
             return Fail(error: GratitudeError.unauthorized).eraseToAnyPublisher()
         }
@@ -62,7 +63,7 @@ class GratitudeService: GratitudeServiceProtocol {
             .eraseToAnyPublisher()
     }
     
-    func getGratitudeList(_ dto: GetGratitudeDto) -> AnyPublisher<GetGratitudeResponseDto, GratitudeError> {
+    func getGratitudeList(_ dto: GetGratitudeDto) -> AnyPublisher<GetGratitudeResponse, GratitudeError> {
         guard let accessToken = try? tokenManager.getAccessToken() else {
             return Fail(error: GratitudeError.unauthorized).eraseToAnyPublisher()
         }
@@ -96,6 +97,17 @@ class GratitudeService: GratitudeServiceProtocol {
             .mapError { GratitudeError.mapFromNetworkError($0) }
             .eraseToAnyPublisher()
     }
+    
+    func getGratitudeCount(id: Int) -> AnyPublisher<GratitudeCountResponse, GratitudeError> {
+        guard let accessToken = try? tokenManager.getAccessToken() else {
+            return Fail(error: GratitudeError.unauthorized).eraseToAnyPublisher()
+        }
+        let endpoint = GratitudeEndpoint.getGratitudeCount(id: id, accessToken: accessToken)
+        return networkService.request(endpoint)
+            .mapError { GratitudeError.mapFromNetworkError($0) }
+            .eraseToAnyPublisher()
+            
+    }
 }
 
 // MARK: - Stub
@@ -115,14 +127,11 @@ class StubGratitudeService: GratitudeServiceProtocol {
         .eraseToAnyPublisher()
     }
     
-    func updateGratitude(id: Int, dto: UpdateGratitudeDto) -> AnyPublisher<GratitudeResponse, GratitudeError> {
-        let stubMember = Member(id: 1, email: "test@example.com", name: "Test User", nickname: "Test", profile: nil)
+    func updateGratitude(id: Int, dto: UpdateGratitudeDto) -> AnyPublisher<UpdateGratitudeResponse, GratitudeError> {
         
-        return Just(GratitudeResponse(
+        return Just(UpdateGratitudeResponse(
             id: id,
             contents: dto.contents ?? "감사합니다",
-            recipient: stubMember,
-            author: stubMember,
             isAnonymous: dto.isAnonymous ?? false,
             visibility: dto.visibility ?? .PRIVATE
         ))
@@ -136,8 +145,8 @@ class StubGratitudeService: GratitudeServiceProtocol {
             .eraseToAnyPublisher()
     }
     
-    func getGratitudeList(_ dto: GetGratitudeDto) -> AnyPublisher<GetGratitudeResponseDto, GratitudeError> {
-        return Just(GetGratitudeResponseDto(
+    func getGratitudeList(_ dto: GetGratitudeDto) -> AnyPublisher<GetGratitudeResponse, GratitudeError> {
+        return Just(GetGratitudeResponse(
             gratitudeList: [],
             nextCursor: nil,
             count: 0
@@ -157,4 +166,10 @@ class StubGratitudeService: GratitudeServiceProtocol {
             .setFailureType(to: GratitudeError.self)
             .eraseToAnyPublisher()
     }
-} 
+    
+    func getGratitudeCount(id: Int) -> AnyPublisher<GratitudeCountResponse, GratitudeError> {
+        return Just(GratitudeCountResponse(sentCount: 0, receivedCount: 0))
+            .setFailureType(to: GratitudeError.self)
+            .eraseToAnyPublisher()
+    }
+}

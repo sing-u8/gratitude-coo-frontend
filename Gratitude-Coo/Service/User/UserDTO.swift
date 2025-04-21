@@ -27,7 +27,7 @@ struct SearchMemberResponseDto: Codable {
     let count: Int
 }
 
-struct Member: Codable {
+struct Member: Codable, Hashable {
     let id: Int
     let email: String
     let name: String
