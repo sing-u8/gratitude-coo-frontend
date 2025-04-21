@@ -7,6 +7,8 @@ class SearchViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
+    @Published var searchText = ""
+    
     // 페이지네이션 관련
     private var nextCursor: String?
     private var hasMoreData = true
@@ -27,10 +29,24 @@ class SearchViewModel: ObservableObject {
     // MARK: - 초기화
     init(container: DIContainer) {
         self.container = container
+        setupSearchSubscription()
+    }
+    
+    private func setupSearchSubscription() {
+        // searchText가 변경될 때마다 디바운스 적용
+        $searchText
+            .debounce(for: .seconds(1), scheduler: RunLoop.main)
+            .removeDuplicates()
+            .sink { [weak self] text in
+                print("Debounced search: \(text)")
+                self?.searchMember(forceRefresh: true)
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - 회원 검색
-    func searchMember(keyword: String, forceRefresh: Bool = false) {
+    func searchMember(forceRefresh: Bool = false) {
+        print("Search member called with: \(searchText)")
         // 이미 로딩 중이면 중복 호출 방지
         if isLoading { return }
         
@@ -38,17 +54,17 @@ class SearchViewModel: ObservableObject {
         if !hasMoreData && !forceRefresh { return }
         
         // 새 검색어이거나 강제 새로고침이면 상태 초기화
-        if currentKeyword != keyword || forceRefresh {
+        if currentKeyword != searchText || forceRefresh {
             members = []
             nextCursor = nil
             hasMoreData = true
-            currentKeyword = keyword
+            currentKeyword = searchText
         }
         
         isLoading = true
         
         let searchDto = SearchMemberDto(
-            search: keyword.isEmpty ? nil : keyword,
+            search: searchText.isEmpty ? nil : searchText,
             cursor: nextCursor,
             order: ["createdAt_DESC"],
             take: defaultTake
@@ -91,7 +107,7 @@ class SearchViewModel: ObservableObject {
     // MARK: - 추가 데이터 로드 (직접 호출)
     func loadMoreMembers() {
         if !isLoading && hasNext {
-            searchMember(keyword: currentKeyword)
+            searchMember()
         }
     }
     
@@ -110,6 +126,6 @@ class SearchViewModel: ObservableObject {
     
     // MARK: - 현재 검색 결과 새로고침
     func refreshCurrentSearch() {
-        searchMember(keyword: currentKeyword, forceRefresh: true)
+        searchMember(forceRefresh: true)
     }
 }

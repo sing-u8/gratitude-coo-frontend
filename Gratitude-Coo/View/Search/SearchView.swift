@@ -14,22 +14,10 @@ struct SearchView: View {
     @StateObject private var viewModel: SearchViewModel
     
     @State private var selectedUser: Member?
-    @State private var searchText = ""
-    @State private var cancellables = Set<AnyCancellable>()
     
     init(container: DIContainer) {
         self.container = container
         _viewModel = StateObject(wrappedValue: SearchViewModel(container: container))
-    }
-    
-    private var searchTextPublisher: AnyPublisher<String, Never> {
-        searchText
-            .publisher
-            .collect()
-            .map { String($0) }
-            .debounce(for: .seconds(0.5), scheduler: RunLoop.main) // 0.5초 디바운스
-            .removeDuplicates()
-            .eraseToAnyPublisher()
     }
     
     var body: some View {
@@ -45,19 +33,6 @@ struct SearchView: View {
         .padding(.horizontal, 16)
         .background(Color.bg)
         .navigationTitle("Search User")
-        .onAppear {
-            // onAppear에서 구독 설정
-            searchTextPublisher
-                .sink { debouncedText in
-                    print("Debounced text: \(debouncedText)")
-                    guard !debouncedText.isEmpty else {
-                        viewModel.searchMember(keyword: "")
-                        return
-                    }
-                    viewModel.searchMember(keyword: debouncedText)
-                }
-                .store(in: &cancellables)
-        }
     }
     
     private var searchBar: some View {
@@ -69,15 +44,15 @@ struct SearchView: View {
                 .padding(.trailing, 8)
             
             // 텍스트 필드 (LabeledTextField의 스타일 유지)
-            TextField("Search user", text: $searchText)
+            TextField("Search user", text: $viewModel.searchText)
                 .padding(.vertical, 12)
                 .foregroundColor(.txPrimary)
             
             // 삭제 버튼
-            if !searchText.isEmpty {
+            if !viewModel.searchText.isEmpty {
                 Button {
-                    searchText = ""
-                    viewModel.searchMember(keyword: "")
+                    viewModel.searchText = ""
+                    viewModel.searchMember(forceRefresh: true)
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.gray)
@@ -112,10 +87,6 @@ struct SearchView: View {
                             selectedUser = member
                         }
                     )
-                    .onAppear {
-                        // 스크롤 시 자동 로드
-                        viewModel.loadMoreIfNeeded(currentItem: member)
-                    }
                 }
                 
                 // 로딩 중이면 로딩 표시
@@ -138,12 +109,12 @@ struct SearchView: View {
         .scrollIndicators(.hidden)
         .refreshable {
             // 새로고침 시 전체 검색 결과 갱신
-            viewModel.searchMember(keyword: searchText)
+            viewModel.searchMember(forceRefresh: true)
         }
         .onAppear {
             // 처음 화면이 나타날 때 전체 회원 조회
             if viewModel.members.isEmpty {
-                viewModel.searchMember(keyword: searchText)
+                viewModel.searchMember()
             }
         }
     }
