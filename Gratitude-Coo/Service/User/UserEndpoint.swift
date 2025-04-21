@@ -19,8 +19,20 @@ extension UserEndpoint: APIEndpoint {
             return "/member/\(id)"
         case .removeMember(let id, _):
             return "/member/\(id)"
-        case .searchMembers:
-            return "/member"
+        case .searchMembers(let dto):
+            var pathWithQuery = "/member?take=\(dto.take)"
+            
+            let orderString = dto.order.joined(separator: ",")
+            pathWithQuery += "&order=\(orderString)"
+            
+            if let search = dto.search {
+                pathWithQuery += "&search=\(search)"
+            }
+            
+            if let cursor = dto.cursor, !cursor.isEmpty {
+                pathWithQuery += "&cursor=\(cursor)"
+            }
+            return pathWithQuery
         }
     }
     
@@ -45,21 +57,6 @@ extension UserEndpoint: APIEndpoint {
             if let nickname = dto.nickname { body["nickname"] = nickname }
             if let profile = dto.profile { body["profile"] = profile }
             return body
-        default:
-            return nil
-        }
-    }
-    
-    var queryParameters: [String: Any]? {
-        switch self {
-        case .searchMembers(let dto):
-            var params: [String: Any] = [
-                "take": dto.take,
-                "order": dto.order
-            ]
-            if let search = dto.search { params["search"] = search }
-            if let cursor = dto.cursor { params["cursor"] = cursor }
-            return params
         default:
             return nil
         }

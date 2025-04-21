@@ -16,18 +16,18 @@ struct UserSearchItem: View {
                 Avatar(
                     userName: nickname,
                     image: image,
-                    size: .small,
+                    size: .mediumSmall,
                 )
                 
                 // User info
                 VStack(alignment: .leading, spacing: 2) {
                     // Nickname
                     Text(nickname)
-                        .textStyle(size: .body, weight: .medium, color: .txPrimary)
+                        .textStyle(size: .title3, weight: .bold, color: .txPrimary)
                     
                     // Username (optional)
                     Text(username)
-                        .textStyle(size: .subheadline, weight: .regular, color: .txSecondary)
+                        .textStyle(size: .body, weight: .regular, color: .txPrimary)
                 }
                 
                 Spacer()
@@ -46,7 +46,7 @@ struct UserSearchListViewExample: View {
     
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 0) {
+            LazyVStack(spacing: 8) {
                 ForEach(users) { user in
                     UserSearchItem(
                         userId: user.id,
@@ -57,16 +57,9 @@ struct UserSearchListViewExample: View {
                             selectedUser = user
                         }
                     )
-                    
-                    if user.id != users.last?.id {
-                        Divider()
-                            .padding(.leading, 60)
-                    }
                 }
             }
         }
-        .background(Color.itBgPri)
-        .cornerRadius(12)
     }
 }
 

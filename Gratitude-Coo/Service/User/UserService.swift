@@ -58,6 +58,9 @@ class UserService: UserServiceProtocol {
     }
     
     func searchMembers(_ dto: SearchMemberDto) -> AnyPublisher<SearchMemberResponseDto, UserError> {
+        
+        print("searchMembers -- dto: \(dto.order) \(String(describing: dto.cursor)) \(dto.order) \(dto.take)")
+        
         let endpoint = UserEndpoint.searchMembers(dto)
         return networkService.request(endpoint)
             .mapError { UserError.mapFromNetworkError($0) }

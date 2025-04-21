@@ -79,10 +79,6 @@ extension GratitudeEndpoint: APIEndpoint {
         }
     }
     
-    var queryParameters: [String: Any]? {
-        return nil
-    }
-    
     var headers: [String: String]? {
         var headers: [String: String] = [:]
         
