@@ -97,6 +97,7 @@ class AuthenticationViewModel: ObservableObject {
         case .register(let email, let password):
             isLoading = true
             
+            print("Registering user with email: \(email), password: \(password)")
             container.service.authService.register(email: email, password: password)
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] completion in

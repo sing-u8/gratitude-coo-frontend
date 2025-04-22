@@ -8,8 +8,8 @@
 import Foundation
 
 struct NetworkConfig {
-    static let baseURL = "http://172.30.1.78:3000"
-//    static let baseURL = "http://10.141.60.242:3000"
+//    static let baseURL = "http://172.30.1.78:3000"
+    static let baseURL = "http://10.141.60.242:3000"
     static let defaultHeaders = [
         "Content-Type": "application/json",
         "Accept": "*/*",

@@ -87,7 +87,7 @@ extension View {
         modifier(TextStyle(size: size, weight: weight, color: color))
     }
     
-    // 이 부분 나중에 다시 공부하기
+    // todo: 이 부분 나중에 다시 공부하기
     @ViewBuilder
     func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
         if condition {

@@ -38,26 +38,26 @@ struct FellowHomeView: View {
                 messageSection
             }
             .background(Color.bg)
-            .navigationDestination(isPresented: $showWriteMessage) {
-                CreateGratitudeView(container: container, modelContext: modelContext, recipient: fellowUser)
-                    .onDisappear {
-                        // 메시지 작성 화면에서 돌아왔을 때 갱신
-                        viewModel.refreshGratitudeCount()
-                    }
-            }
-            .navigationDestination(item:$messageToEdit) { message in
-                UpdateGratitudeView(container: container, modelContext: modelContext, gratitudeMessage: message)
-                    .onDisappear {
-                        // 메시지 수정 화면에서 돌아왔을 때 갱신
-                        viewModel.refreshGratitudeCount()
-                    }
-            }
             .refreshable {
                 viewModel.refreshCurrentType()
                 viewModel.refreshGratitudeCount()
             }
+            .sheet(isPresented: $showWriteMessage) {
+                CreateGratitudeView(container: container, modelContext: modelContext, recipient: fellowUser)
+                    .onDisappear {
+                        viewModel.refreshCurrentType()
+                        viewModel.refreshGratitudeCount()
+                    }
+            }
+            .sheet(item:$messageToEdit) { message in
+                UpdateGratitudeView(container: container, modelContext: modelContext, gratitudeMessage: message)
+                    .onDisappear {
+                        viewModel.refreshCurrentType()
+                        viewModel.refreshGratitudeCount()
+                    }
+            }
+            
             .onAppear {
-                // 화면이 나타날 때 갱신
                 viewModel.refreshGratitudeCount()
             }
             .alert(

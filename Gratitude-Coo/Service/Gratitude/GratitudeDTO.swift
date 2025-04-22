@@ -25,7 +25,7 @@ struct UpdateGratitudeDto: Codable {
     let visibility: Visibility?
 }
 
-struct GratitudeResponse: Codable, Hashable {
+struct GratitudeResponse: Codable, Hashable, Identifiable {
     var id: Int
     var contents: String
     var recipient: Member

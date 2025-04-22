@@ -89,36 +89,6 @@ class HomeViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
-    // MARK: - Observers 이 정도까지는 필요하지 않은듯
-    //    private func setupCountObservers() {
-    //        // selfToSelfMessages 변경 시 카운트 업데이트
-    //        $selfToSelfMessages
-    //            .dropFirst()
-    //            .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
-    //            .sink { [weak self] _ in
-    //                self?.refreshGratitudeCount()
-    //            }
-    //            .store(in: &cancellables)
-    //
-    //        // selfToOtherMessages 변경 시 카운트 업데이트
-    //        $selfToOtherMessages
-    //            .dropFirst()
-    //            .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
-    //            .sink { [weak self] _ in
-    //                self?.refreshGratitudeCount()
-    //            }
-    //            .store(in: &cancellables)
-    //
-    //        // otherToSelfMessages 변경 시 카운트 업데이트
-    //        $otherToSelfMessages
-    //            .dropFirst()
-    //            .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
-    //            .sink { [weak self] _ in
-    //                self?.refreshGratitudeCount()
-    //            }
-    //            .store(in: &cancellables)
-    //    }
-    
     // MARK: - Methods
     private func fetchCurrentUserId() {
         // SwiftData를 사용하여 현재 사용자 ID를 가져오는 로직

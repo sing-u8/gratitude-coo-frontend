@@ -94,7 +94,9 @@ struct SignInView: View {
             .padding()
             .background(Color.bg)
             .navigationDestination(isPresented: $showSignUp) {
-                SignUpView()
+                SignUpView() { (email, password) in
+                    authViewModel.send(action: .register(email: email, password: password))
+                }
             }
             .overlay {
                 if authViewModel.isLoading {

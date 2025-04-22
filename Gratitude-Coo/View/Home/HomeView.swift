@@ -37,25 +37,27 @@ struct HomeView: View {
                 messageSection
             }
             .background(Color.bg)
-            .navigationDestination(isPresented: $showWriteMessage) {
+            .refreshable {
+                viewModel.refreshCurrentType()
+                viewModel.refreshGratitudeCount()
+            }.sheet(isPresented: $showWriteMessage) {
                 CreateGratitudeView(container: container, modelContext: modelContext)
                     .onDisappear {
-                        // 메시지 작성 화면에서 돌아왔을 때 갱신
+                        viewModel.refreshCurrentType()
                         viewModel.refreshGratitudeCount()
                     }
             }
-            .navigationDestination(isPresented: $showSettings) {
+            .sheet(isPresented: $showSettings) {
                 UserSettingsView()
             }
-            .navigationDestination(isPresented: $showProfileEdit) {
+            .sheet(isPresented: $showProfileEdit) {
                 UserProfileEditView(viewModel: .init(container: container, modelContext: modelContext))
             }
-            .navigationDestination(item:$messageToEdit) { message in
+            .sheet(item:$messageToEdit, onDismiss: {
+                viewModel.refreshCurrentType()
+                viewModel.refreshGratitudeCount()
+            }) { message in
                 UpdateGratitudeView(container: container, modelContext: modelContext, gratitudeMessage: message)
-                    .onDisappear {
-                        // 메시지 수정 화면에서 돌아왔을 때 갱신
-                        viewModel.refreshGratitudeCount()
-                    }
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -69,10 +71,6 @@ struct HomeView: View {
                             .background(Circle().fill(Color.clear))
                     }
                 }
-            }
-            .refreshable {
-                viewModel.refreshCurrentType()
-                viewModel.refreshGratitudeCount()
             }
             .onAppear {
                 // 화면이 나타날 때 갱신
