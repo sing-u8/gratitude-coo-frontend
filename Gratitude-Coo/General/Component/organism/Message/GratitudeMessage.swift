@@ -15,6 +15,7 @@ struct GratitudeMessage: View {
     
     var viewingUserId: Int
     var currentUserId: Int
+    var authorId: Int
     
     // Action closures
     var onEdit: (() -> Void)?
@@ -29,7 +30,7 @@ struct GratitudeMessage: View {
         return currentUserId == viewingUserId && (messageType == .fromSelfToSelf || messageType == .fromSelfToOther)
     }
     private var isOtherUserViewing: Bool {
-        return currentUserId != viewingUserId && (messageType == .fromOtherToSelf)
+        return currentUserId != viewingUserId && currentUserId == authorId && (messageType == .fromOtherToSelf)
     }
     
     var body: some View {
@@ -167,6 +168,7 @@ struct GratitudeMessage: View {
             messageType: .fromSelfToSelf,
             viewingUserId: 1,
             currentUserId: 1,
+            authorId: 1,
         )
         
         // Message from self to other user
@@ -181,6 +183,7 @@ struct GratitudeMessage: View {
             messageType: .fromSelfToOther,
             viewingUserId: 2,
             currentUserId: 1,
+            authorId: 2,
         )
         
         // Message from other user to self
@@ -195,6 +198,7 @@ struct GratitudeMessage: View {
             messageType: .fromOtherToSelf,
             viewingUserId: 1,
             currentUserId: 1,
+            authorId: 3,
         )
     }
     .padding()

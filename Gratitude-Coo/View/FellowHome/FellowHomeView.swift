@@ -153,6 +153,7 @@ struct FellowHomeView: View {
                 } else {
                     // 메시지 목록 표시
                     ForEach(viewModel.messages(for: type), id: \.id) { message in
+                        
                         GratitudeMessage(
                             id: message.id,
                             userName: message.isAnonymous ? "익명" : (type == .fromSelfToOther ? message.recipient.nickname : message.author.nickname),
@@ -162,6 +163,7 @@ struct FellowHomeView: View {
                             messageType: type,
                             viewingUserId: fellowUser.id,
                             currentUserId: currentUser.first?.id ?? 0,
+                            authorId: message.author.id,
                             onEdit: {
                                 if type == .fromOtherToSelf {
                                     messageToEdit = message

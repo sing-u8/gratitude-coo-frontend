@@ -185,6 +185,7 @@ struct HomeView: View {
                             messageType: type,
                             viewingUserId: currentUser.first?.id ?? 0,
                             currentUserId: currentUser.first?.id ?? 0,
+                            authorId: message.author.id,
                             onEdit: {
                                 // 본인이 작성한 메시지만 수정 가능
                                 if type == .fromSelfToSelf || type == .fromSelfToOther {

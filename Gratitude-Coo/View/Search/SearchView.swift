@@ -96,12 +96,6 @@ struct SearchView: View {
                     )
                 }
                 
-                // 로딩 중이면 로딩 표시
-                if viewModel.isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, minHeight: 50)
-                }
-                
                 // 더 보기 버튼
                 if !viewModel.members.isEmpty && viewModel.hasNext && !viewModel.isLoading {
                     loadMoreButton
